@@ -18,3 +18,22 @@ cmake_minimum_required(VERSION 3.18)
 project(clmtl CXX)
 
 add_subdirectory(deps)
+
+add_library(clmtl
+        src/Driver.cpp
+)
+
+target_compile_features(clmtl
+    PUBLIC
+        cxx_std_20
+)
+
+target_compile_definitions(clmtl
+    PRIVATE
+        CL_TARGET_OPENCL_VERSION=100
+)
+
+target_link_libraries(clmtl
+    PUBLIC
+        khronos
+)
