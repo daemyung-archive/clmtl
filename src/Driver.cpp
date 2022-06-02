@@ -16,6 +16,8 @@
 
 #include <CL/cl_icd.h>
 
+#include "Dispatch.h"
+
 /***********************************************************************************************************************
 * OpenCL Core APIs
 ***********************************************************************************************************************/
@@ -763,7 +765,7 @@ cl_int clUnloadCompiler(void) {
 }
 
 void *clGetExtensionFunctionAddress(const char *func_name) {
-    return nullptr;
+    return func_name ? clmtl::Dispatch::GetExtensionSymbol(func_name) : nullptr;
 }
 
 /***********************************************************************************************************************
@@ -820,7 +822,15 @@ cl_event clCreateEventFromEGLSyncKHR(cl_context context, CLeglSyncKHR sync, CLeg
 ***********************************************************************************************************************/
 
 cl_int clIcdGetPlatformIDsKHR(cl_uint num_entries, cl_platform_id *platforms, cl_uint *num_platforms) {
-    return CL_INVALID_VALUE;
+    if (!num_entries && platforms) {
+        return CL_INVALID_VALUE;
+    }
+
+    if (!platforms && !num_platforms) {
+        return CL_INVALID_VALUE;
+    }
+
+    return CL_PLATFORM_NOT_FOUND_KHR;
 }
 
 /***********************************************************************************************************************
