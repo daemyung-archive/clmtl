@@ -38,4 +38,5 @@ target_compile_definitions(clmtl
 target_link_libraries(clmtl
     PUBLIC
         khronos
+        apple
 )
