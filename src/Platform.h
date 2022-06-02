@@ -14,20 +14,32 @@
 * limitations under the License.
 ***********************************************************************************************************************/
 
-#ifndef CLMTL_DISPATCH_H
-#define CLMTL_DISPATCH_H
+#ifndef CLMTL_PLATFORM_H
+#define CLMTL_PLATFORM_H
 
 #include <string>
 #include <CL/cl_icd.h>
 
+struct _cl_platform_id {
+    cl_icd_dispatch *Dispatch;
+};
+
 namespace clmtl {
 
-class Dispatch {
+class Platform : public _cl_platform_id {
 public:
-    static cl_icd_dispatch *GetTable();
-    static void *GetExtensionSymbol(const std::string &symbolName);
+    static Platform *GetSingleton();
+    static std::string GetProfile();
+    static std::string GetVersion();
+    static std::string GetName();
+    static std::string GetVendor();
+    static std::string GetExtensions();
+    static std::string GetSuffix();
+
+private:
+    Platform();
 };
 
 } //namespace clmtl
 
-#endif //CLMTL_DISPATCH_H
+#endif //CLMTL_PLATFORM_H

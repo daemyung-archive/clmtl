@@ -17,6 +17,7 @@
 #include <CL/cl_icd.h>
 
 #include "Dispatch.h"
+#include "Platform.h"
 
 /***********************************************************************************************************************
 * OpenCL Core APIs
@@ -27,12 +28,69 @@
 ***********************************************************************************************************************/
 
 cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint *num_platforms) {
-    return CL_INVALID_VALUE;
+    if (!num_entries && platforms) {
+        return CL_INVALID_VALUE;
+    }
+
+    if (!platforms && !num_platforms) {
+        return CL_INVALID_VALUE;
+    }
+
+    if (platforms) {
+        platforms[0] = clmtl::Platform::GetSingleton();
+    }
+
+    if (num_platforms) {
+        num_platforms[0] = 1;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, size_t param_value_size,
                          void *param_value, size_t *param_value_size_ret) {
-    return CL_INVALID_PLATFORM;
+    if (platform != clmtl::Platform::GetSingleton()) {
+        return CL_INVALID_PLATFORM;
+    }
+
+    std::string info;
+
+    switch (param_name) {
+        case CL_PLATFORM_PROFILE:
+            info = clmtl::Platform::GetProfile();
+            break;
+        case CL_PLATFORM_VERSION:
+            info = clmtl::Platform::GetVersion();
+            break;
+        case CL_PLATFORM_NAME:
+            info = clmtl::Platform::GetName();
+            break;
+        case CL_PLATFORM_VENDOR:
+            info = clmtl::Platform::GetVendor();
+            break;
+        case CL_PLATFORM_EXTENSIONS:
+            info = clmtl::Platform::GetExtensions();
+            break;
+        case CL_PLATFORM_ICD_SUFFIX_KHR:
+            info = clmtl::Platform::GetSuffix();
+            break;
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size <= info.size()) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info.c_str(), info.size() + 1);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = info.size() + 1;
+    }
+
+    return CL_SUCCESS;
 }
 
 /***********************************************************************************************************************
@@ -830,7 +888,19 @@ cl_int clIcdGetPlatformIDsKHR(cl_uint num_entries, cl_platform_id *platforms, cl
         return CL_INVALID_VALUE;
     }
 
-    return CL_PLATFORM_NOT_FOUND_KHR;
+    if (!clmtl::Platform::GetSingleton()) {
+        return CL_PLATFORM_NOT_FOUND_KHR;
+    }
+
+    if (platforms) {
+        platforms[0] = clmtl::Platform::GetSingleton();
+    }
+
+    if (num_platforms) {
+        num_platforms[0] = 1;
+    }
+
+    return CL_SUCCESS;
 }
 
 /***********************************************************************************************************************

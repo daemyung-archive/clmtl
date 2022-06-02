@@ -14,20 +14,44 @@
 * limitations under the License.
 ***********************************************************************************************************************/
 
-#ifndef CLMTL_DISPATCH_H
-#define CLMTL_DISPATCH_H
+#include "Platform.h"
 
-#include <string>
-#include <CL/cl_icd.h>
+#include "Dispatch.h"
 
 namespace clmtl {
 
-class Dispatch {
-public:
-    static cl_icd_dispatch *GetTable();
-    static void *GetExtensionSymbol(const std::string &symbolName);
-};
+Platform *Platform::GetSingleton() {
+    static Platform sPlatform;
+    return &sPlatform;
+}
+
+std::string Platform::GetProfile() {
+    return "FULL_PROFILE";
+}
+
+std::string Platform::GetVersion() {
+    return "OpenCL 1.0";
+}
+
+std::string Platform::GetName() {
+    return "ICD_LOADER_TEST_OPENCL_STUB";
+}
+
+std::string Platform::GetVendor() {
+    return "Daemyung Jang";
+}
+
+std::string Platform::GetExtensions() {
+    return "cl_khr_icd";
+}
+
+std::string Platform::GetSuffix() {
+    return "CLMTL";
+}
+
+Platform::Platform()
+        : _cl_platform_id{Dispatch::GetTable()} {
+    assert(Dispatch);
+}
 
 } //namespace clmtl
-
-#endif //CLMTL_DISPATCH_H
