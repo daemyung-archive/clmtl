@@ -23,8 +23,11 @@ add_library(clmtl
         src/Driver.cpp
         src/Dispatch.h
         src/Dispatch.cpp
+        src/Util.h
         src/Platform.h
         src/Platform.cpp
+        src/Device.h
+        src/Device.cpp
 )
 
 target_compile_features(clmtl

@@ -16,8 +16,10 @@
 
 #include <CL/cl_icd.h>
 
+#include "Util.h"
 #include "Dispatch.h"
 #include "Platform.h"
+#include "Device.h"
 
 /***********************************************************************************************************************
 * OpenCL Core APIs
@@ -99,12 +101,315 @@ cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, s
 
 cl_int clGetDeviceIDs(cl_platform_id platform, cl_device_type device_type, cl_uint num_entries, cl_device_id *devices,
                       cl_uint *num_devices) {
-    return CL_INVALID_PLATFORM;
+    if (platform != clmtl::Platform::GetSingleton()) {
+        return CL_INVALID_PLATFORM;
+    }
+
+    if (!num_entries && devices) {
+        return CL_INVALID_VALUE;
+    }
+
+    if (!devices && !num_devices) {
+        return CL_INVALID_VALUE;
+    }
+
+    if (clmtl::Util::TestAnyFlagSet(device_type, CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_ACCELERATOR)) {
+        return CL_DEVICE_NOT_FOUND;
+    }
+
+    if (devices) {
+        if (num_entries < 1) {
+            return CL_INVALID_VALUE;
+        } else {
+            devices[0] = clmtl::Device::GetSingleton();
+        }
+    }
+
+    if (num_devices) {
+        num_devices[0] = 1;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t param_value_size, void *param_value,
                        size_t *param_value_size_ret) {
-    return CL_INVALID_DEVICE;
+    if (!device) {
+        return CL_INVALID_DEVICE;
+    }
+
+    auto limits = clmtl::Device::DownCast(device)->GetLimits();
+    void *info;
+    size_t size;
+
+    switch (param_name) {
+        case CL_DEVICE_TYPE:
+            info = &limits.Type;
+            size = sizeof(cl_device_type);
+            break;
+        case CL_DEVICE_VENDOR_ID:
+            info = &limits.VendorId;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_MAX_COMPUTE_UNITS:
+            info = &limits.MaxComputeUnits;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS:
+            info = &limits.MaxWorkItemDimensions;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_MAX_WORK_GROUP_SIZE:
+            info = &limits.MaxWorkGroupSize;
+            size = sizeof(size_t);
+            break;
+        case CL_DEVICE_MAX_WORK_ITEM_SIZES:
+            info = limits.MaxWorkItemSizes;
+            size = sizeof(size_t) * 3;
+            break;
+        case CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR:
+            info = &limits.PreferredVectorWidthChar;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT:
+            info = &limits.PreferredVectorWidthShort;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT:
+            info = &limits.PreferredVectorWidthInt;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG:
+            info = &limits.PreferredVectorWidthLong;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT:
+            info = &limits.PreferredVectorWidthFloat;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE:
+            info = &limits.PreferredVectorWidthDouble;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_MAX_CLOCK_FREQUENCY:
+            info = &limits.MaxClockFrequency;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_ADDRESS_BITS:
+            info = &limits.AddressBits;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_MAX_READ_IMAGE_ARGS:
+            info = &limits.MaxReadImageArgs;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_MAX_WRITE_IMAGE_ARGS:
+            info = &limits.MaxWriteImageArgs;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_MAX_MEM_ALLOC_SIZE:
+            info = &limits.MaxMemAllocSize;
+            size = sizeof(cl_ulong);
+            break;
+        case CL_DEVICE_IMAGE2D_MAX_WIDTH:
+            info = &limits.Image2DMaxWidth;
+            size = sizeof(size_t);
+            break;
+        case CL_DEVICE_IMAGE2D_MAX_HEIGHT:
+            info = &limits.Image2DMaxHeight;
+            size = sizeof(size_t);
+            break;
+        case CL_DEVICE_IMAGE3D_MAX_WIDTH:
+            info = &limits.Image3DMaxWidth;
+            size = sizeof(size_t);
+            break;
+        case CL_DEVICE_IMAGE3D_MAX_HEIGHT:
+            info = &limits.Image3DMaxHeight;
+            size = sizeof(size_t);
+            break;
+        case CL_DEVICE_IMAGE3D_MAX_DEPTH:
+            info = &limits.Image3DMaxDepth;
+            size = sizeof(size_t);
+            break;
+        case CL_DEVICE_IMAGE_SUPPORT:
+            info = &limits.ImageSupport;
+            size = sizeof(cl_bool);
+            break;
+        case CL_DEVICE_MAX_PARAMETER_SIZE:
+            info = &limits.MaxParameterSize;
+            size = sizeof(size_t);
+            break;
+        case CL_DEVICE_MAX_SAMPLERS:
+            info = &limits.MaxSamplers;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_MEM_BASE_ADDR_ALIGN:
+            info = &limits.MemBaseAddrAlign;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_MIN_DATA_TYPE_ALIGN_SIZE:
+            info = &limits.MinDataTypeAlignSize;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_SINGLE_FP_CONFIG:
+            info = &limits.SingleFpConfig;
+            size = sizeof(cl_device_fp_config);
+            break;
+        case CL_DEVICE_GLOBAL_MEM_CACHE_TYPE:
+            info = &limits.GlobalMemCacheType;
+            size = sizeof(cl_device_mem_cache_type);
+            break;
+        case CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE:
+            info = &limits.GlobalMemCachelineSize;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_GLOBAL_MEM_CACHE_SIZE:
+            info = &limits.GlobalMemCacheSize;
+            size = sizeof(cl_ulong);
+            break;
+        case CL_DEVICE_GLOBAL_MEM_SIZE:
+            info = &limits.GlobalMemSize;
+            size = sizeof(cl_ulong);
+            break;
+        case CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE:
+            info = &limits.MaxConstantBufferSize;
+            size = sizeof(cl_ulong);
+            break;
+        case CL_DEVICE_MAX_CONSTANT_ARGS:
+            info = &limits.MaxConstantArgs;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_LOCAL_MEM_TYPE:
+            info = &limits.LocalMemType;
+            size = sizeof(cl_ulong);
+            break;
+        case CL_DEVICE_LOCAL_MEM_SIZE:
+            info = &limits.LocalMemSize;
+            size = sizeof(cl_ulong);
+            break;
+        case CL_DEVICE_ERROR_CORRECTION_SUPPORT:
+            info = &limits.ErrorCorrectionSupport;
+            size = sizeof(cl_bool);
+            break;
+        case CL_DEVICE_PROFILING_TIMER_RESOLUTION:
+            info = &limits.ProfilingTimeResolution;
+            size = sizeof(size_t);
+            break;
+        case CL_DEVICE_ENDIAN_LITTLE:
+            info = &limits.EndianLittle;
+            size = sizeof(cl_bool);
+            break;
+        case CL_DEVICE_AVAILABLE:
+            info = &limits.Available;
+            size = sizeof(cl_bool);
+            break;
+        case CL_DEVICE_COMPILER_AVAILABLE:
+            info = &limits.CompilerAvailable;
+            size = sizeof(cl_bool);
+            break;
+        case CL_DEVICE_EXECUTION_CAPABILITIES:
+            info = &limits.ExecCapabilities;
+            size = sizeof(cl_device_exec_capabilities);
+            break;
+        case CL_DEVICE_QUEUE_PROPERTIES:
+            info = &limits.QueueOnHostProperties;
+            size = sizeof(cl_command_queue_properties);
+            break;
+#ifdef CL_VERSION_2_0
+        case CL_DEVICE_QUEUE_ON_HOST_PROPERTIES:
+            break;
+#endif //CL_VERSION_2_0
+        case CL_DEVICE_NAME:
+            info = limits.Name.data();
+            size = limits.Name.size() + 1;
+            break;
+        case CL_DEVICE_VENDOR:
+            info = limits.Vendor.data();
+            size = limits.Vendor.size() + 1;
+            break;
+        case CL_DRIVER_VERSION:
+            info = limits.DriverVersion.data();
+            size = limits.DriverVersion.size() + 1;
+            break;
+        case CL_DEVICE_PROFILE:
+            info = limits.Profile.data();
+            size = limits.Profile.size() + 1;
+            break;
+        case CL_DEVICE_VERSION:
+            info = limits.Version.data();
+            size = limits.Version.size() + 1;
+            break;
+        case CL_DEVICE_EXTENSIONS:
+            info = limits.Extensions.data();
+            size = limits.Extensions.size() + 1;
+            break;
+        case CL_DEVICE_PLATFORM:
+            info = limits.Platform;
+            size = sizeof(cl_platform_id);
+            break;
+        case CL_DEVICE_DOUBLE_FP_CONFIG:
+            info = &limits.DoubleFpConfig;
+            size = sizeof(cl_device_fp_config);
+            break;
+#ifdef CL_VERSION_1_1
+        case CL_DEVICE_PREFERRED_VECTOR_WIDTH_HALF:
+            info = &limits.PreferredVectorWidthHalf;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_HOST_UNIFIED_MEMORY:
+            info = &limits.HostUnifiedMemory;
+            size = sizeof(cl_bool);
+            break;
+        case CL_DEVICE_NATIVE_VECTOR_WIDTH_CHAR:
+            info = &limits.NativeVectorWidthChar;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_NATIVE_VECTOR_WIDTH_SHORT:
+            info = &limits.NativeVectorWidthShort;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_NATIVE_VECTOR_WIDTH_INT:
+            info = &limits.NativeVectorWidthInt;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_NATIVE_VECTOR_WIDTH_LONG:
+            info = &limits.NativeVectorWidthLong;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_NATIVE_VECTOR_WIDTH_FLOAT:
+            info = &limits.NativeVectorWidthFloat;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE:
+            info = &limits.NativeVectorWidthDouble;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_NATIVE_VECTOR_WIDTH_HALF:
+            info = &limits.NativeVectorWidthHalf;
+            size = sizeof(cl_uint);
+            break;
+        case CL_DEVICE_OPENCL_C_VERSION:
+            info = limits.CVersion.data();
+            size = limits.CVersion.size() + 1;
+            break;
+#endif //CL_VERSION_1_1
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size < size) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info, size);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = size;
+    }
+
+    return CL_SUCCESS;
 }
 
 #ifdef CL_VERSION_1_2
