@@ -25,6 +25,10 @@ Platform *Platform::GetSingleton() {
     return &sPlatform;
 }
 
+Platform *Platform::DownCast(_cl_platform_id *platform) {
+    return (Platform *) platform;
+}
+
 std::string Platform::GetProfile() {
     return "FULL_PROFILE";
 }

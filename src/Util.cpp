@@ -14,33 +14,21 @@
 * limitations under the License.
 ***********************************************************************************************************************/
 
-#ifndef CLMTL_PLATFORM_H
-#define CLMTL_PLATFORM_H
-
-#include <string>
-#include <CL/cl_icd.h>
-
-struct _cl_platform_id {
-    cl_icd_dispatch *Dispatch;
-};
+#include "Util.h"
 
 namespace clmtl {
 
-class Platform : public _cl_platform_id {
-public:
-    static Platform *GetSingleton();
-    static Platform *DownCast(_cl_platform_id *platform);
-    static std::string GetProfile();
-    static std::string GetVersion();
-    static std::string GetName();
-    static std::string GetVendor();
-    static std::string GetExtensions();
-    static std::string GetSuffix();
+bool Util::TestAnyFlagSet(uint64_t bitset, uint64_t test) {
+    return (bitset & test) != 0;
+}
 
-private:
-    Platform();
-};
+intptr_t Util::ReadProperty(const cl_context_properties *properties, uint64_t key) {
+    for (auto iter = properties; *iter != 0; iter += 2) {
+        if (*iter == key) {
+            return *(iter + 1);
+        }
+    }
+    return 0;
+}
 
 } //namespace clmtl
-
-#endif //CLMTL_PLATFORM_H

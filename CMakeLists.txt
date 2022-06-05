@@ -24,10 +24,15 @@ add_library(clmtl
         src/Dispatch.h
         src/Dispatch.cpp
         src/Util.h
+        src/Util.cpp
         src/Platform.h
         src/Platform.cpp
         src/Device.h
         src/Device.cpp
+        src/Object.h
+        src/Object.cpp
+        src/Context.h
+        src/Context.cpp
 )
 
 target_compile_features(clmtl

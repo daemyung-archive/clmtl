@@ -20,6 +20,7 @@
 #include "Dispatch.h"
 #include "Platform.h"
 #include "Device.h"
+#include "Context.h"
 
 /***********************************************************************************************************************
 * OpenCL Core APIs
@@ -453,27 +454,145 @@ cl_context clCreateContext(const cl_context_properties *properties, cl_uint num_
                            void (*pfn_notify)(const char *errinfo, const void *private_info, size_t cb,
                                               void *user_data),
                            void *user_data, cl_int *errcode_ret) {
-    return nullptr;
+    if (properties) {
+        auto platform = reinterpret_cast<cl_platform_id>(
+                clmtl::Util::ReadProperty(properties, CL_CONTEXT_PLATFORM));
+
+        if (!platform || platform != clmtl::Platform::GetSingleton()) {
+            if (errcode_ret) {
+                errcode_ret[0] = CL_INVALID_VALUE;
+            }
+
+            return nullptr;
+        }
+    }
+
+    if (!num_devices || !devices) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_VALUE;
+        }
+
+        return nullptr;
+    }
+
+    if (num_devices > 1) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_DEVICE_NOT_AVAILABLE;
+        }
+
+        return nullptr;
+    }
+
+    if (devices[0] != clmtl::Device::GetSingleton()) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_DEVICE;
+        }
+
+        return nullptr;
+    }
+
+    if (!pfn_notify && user_data) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_VALUE;
+        }
+
+        return nullptr;
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return new clmtl::Context();
 }
 
 cl_context clCreateContextFromType(const cl_context_properties *properties, cl_device_type device_type,
                                    void (*pfn_notify)(const char *errinfo, const void *private_info, size_t cb,
                                                       void *user_data),
                                    void *user_data, cl_int *errcode_ret) {
-    return nullptr;
+    if (!clmtl::Util::TestAnyFlagSet(device_type, CL_DEVICE_TYPE_DEFAULT | CL_DEVICE_TYPE_GPU)) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_DEVICE_NOT_FOUND;
+        }
+
+        return nullptr;
+    }
+
+    const cl_device_id devices[]{clmtl::Device::GetSingleton()};
+    assert(devices[0]);
+
+    return clCreateContext(properties, 1, devices, pfn_notify, user_data, errcode_ret);
 }
 
 cl_int clRetainContext(cl_context context) {
-    return CL_INVALID_CONTEXT;
+    auto castedContext = clmtl::Context::DownCast(context);
+
+    if (!castedContext) {
+        return CL_INVALID_CONTEXT;
+    }
+
+    castedContext->Retain();
+
+    return CL_SUCCESS;
 }
 
 cl_int clReleaseContext(cl_context context) {
-    return CL_INVALID_CONTEXT;
+    auto castedContext = clmtl::Context::DownCast(context);
+
+    if (!castedContext) {
+        return CL_INVALID_CONTEXT;
+    }
+
+    castedContext->Release();
+
+    if (!castedContext->GetReferenceCount()) {
+        delete castedContext;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clGetContextInfo(cl_context context, cl_context_info param_name, size_t param_value_size, void *param_value,
                         size_t *param_value_size_ret) {
-    return CL_INVALID_CONTEXT;
+    auto castedContext = clmtl::Context::DownCast(context);
+
+    if (!castedContext) {
+        return CL_INVALID_CONTEXT;
+    }
+
+    size_t size;
+    uint8_t info[2048];
+
+    switch (param_name) {
+        case CL_CONTEXT_REFERENCE_COUNT:
+            size = sizeof(cl_uint);
+            *((cl_uint *) info) = castedContext->GetReferenceCount();
+            break;
+        case CL_CONTEXT_DEVICES:
+            size = sizeof(cl_device_id);
+            *((cl_device_id *) info) = castedContext->GetDevice();
+            break;
+        case CL_CONTEXT_PROPERTIES:
+            size = sizeof(cl_context_properties);
+            *((cl_context_properties *) info) = 0;
+            break;
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size < size) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info, size);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = size;
+    }
+
+    return CL_SUCCESS;
 }
 
 #ifdef CL_VERSION_3_0

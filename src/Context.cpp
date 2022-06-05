@@ -14,33 +14,24 @@
 * limitations under the License.
 ***********************************************************************************************************************/
 
-#ifndef CLMTL_PLATFORM_H
-#define CLMTL_PLATFORM_H
+#include "Context.h"
 
-#include <string>
-#include <CL/cl_icd.h>
-
-struct _cl_platform_id {
-    cl_icd_dispatch *Dispatch;
-};
+#include "Dispatch.h"
+#include "Device.h"
 
 namespace clmtl {
 
-class Platform : public _cl_platform_id {
-public:
-    static Platform *GetSingleton();
-    static Platform *DownCast(_cl_platform_id *platform);
-    static std::string GetProfile();
-    static std::string GetVersion();
-    static std::string GetName();
-    static std::string GetVendor();
-    static std::string GetExtensions();
-    static std::string GetSuffix();
+Context *Context::DownCast(cl_context context) {
+    return (Context *) context;
+}
 
-private:
-    Platform();
-};
+Context::Context()
+        : _cl_context{Dispatch::GetTable()}, Object{}, mDevice{Device::GetSingleton()} {
+    assert(Dispatch);
+}
+
+Device *Context::GetDevice() const {
+    return mDevice;
+}
 
 } //namespace clmtl
-
-#endif //CLMTL_PLATFORM_H

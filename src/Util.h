@@ -18,14 +18,14 @@
 #define CLMTL_UTIL_H
 
 #include <cstdint>
+#include <CL/cl.h>
 
 namespace clmtl {
 
 class Util {
 public:
-    static constexpr bool TestAnyFlagSet(uint64_t bitset, uint64_t test) {
-        return (bitset & test) != 0;
-    }
+    static bool TestAnyFlagSet(uint64_t bitset, uint64_t test);
+    static intptr_t ReadProperty(const cl_context_properties *properties, uint64_t key);
 };
 
 } //namespace clmtl
