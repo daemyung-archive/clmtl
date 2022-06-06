@@ -15,40 +15,13 @@
 ########################################################################################################################
 
 cmake_minimum_required(VERSION 3.18)
-project(clmtl CXX)
+project(demo C)
 
-add_subdirectory(deps)
-
-add_library(clmtl
-        src/Driver.cpp
-        src/Dispatch.h
-        src/Dispatch.cpp
-        src/Util.h
-        src/Util.cpp
-        src/Platform.h
-        src/Platform.cpp
-        src/Device.h
-        src/Device.cpp
-        src/Object.h
-        src/Object.cpp
-        src/Context.h
-        src/Context.cpp
+add_executable(demo
+        src/Hello.c
 )
 
-target_compile_features(clmtl
+target_link_libraries(demo
     PUBLIC
-        cxx_std_20
+        clmtl
 )
-
-target_compile_definitions(clmtl
-    PUBLIC
-        CL_TARGET_OPENCL_VERSION=100
-)
-
-target_link_libraries(clmtl
-    PUBLIC
-        khronos
-        apple
-)
-
-add_subdirectory(demo)
