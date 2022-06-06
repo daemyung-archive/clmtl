@@ -41,7 +41,7 @@ target_compile_features(clmtl
 )
 
 target_compile_definitions(clmtl
-    PRIVATE
+    PUBLIC
         CL_TARGET_OPENCL_VERSION=100
 )
 
