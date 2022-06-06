@@ -100,6 +100,7 @@ public:
 
 public:
     ~Device();
+    MTL::Device *GetDevice() const;
     DeviceLimits GetLimits() const;
 
 private:

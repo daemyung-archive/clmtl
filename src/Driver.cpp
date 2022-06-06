@@ -21,6 +21,7 @@
 #include "Platform.h"
 #include "Device.h"
 #include "Context.h"
+#include "CommandQueue.h"
 
 /***********************************************************************************************************************
 * OpenCL Core APIs
@@ -618,16 +619,78 @@ cl_command_queue clCreateCommandQueueWithProperties(cl_context context, cl_devic
 #endif
 
 cl_int clRetainCommandQueue(cl_command_queue command_queue) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto castedCommandQueue = clmtl::CommandQueue::DownCast(command_queue);
+
+    if (!castedCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    castedCommandQueue->Retain();
+
+    return CL_SUCCESS;
 }
 
 cl_int clReleaseCommandQueue(cl_command_queue command_queue) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto castedCommandQueue = clmtl::CommandQueue::DownCast(command_queue);
+
+    if (!castedCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    castedCommandQueue->Release();
+
+    if (!castedCommandQueue->GetReferenceCount()) {
+        delete castedCommandQueue;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clGetCommandQueueInfo(cl_command_queue command_queue, cl_command_queue_info param_name, size_t param_value_size,
                              void *param_value, size_t *param_value_size_ret) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto castedCommandQueue = clmtl::CommandQueue::DownCast(command_queue);
+
+    if (!castedCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    size_t size;
+    uint8_t info[2048];
+
+    switch (param_name) {
+        case CL_QUEUE_CONTEXT:
+            size = sizeof(cl_context);
+            *((cl_context *) info) = castedCommandQueue->GetContext();
+            break;
+        case CL_QUEUE_DEVICE:
+            size = sizeof(cl_device_id);
+            *((cl_device_id *) info) = castedCommandQueue->GetDevice();
+            break;
+        case CL_QUEUE_REFERENCE_COUNT:
+            size = sizeof(cl_uint);
+            *((cl_uint *) info) = castedCommandQueue->GetReferenceCount();
+            break;
+        case CL_QUEUE_PROPERTIES:
+            size = sizeof(cl_properties);
+            *((cl_properties *) info) = 0;
+            break;
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size < size) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info, size);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = size;
+    }
+
+    return CL_SUCCESS;
 }
 
 /* Memory Object APIs */
@@ -1256,7 +1319,39 @@ void *clGetExtensionFunctionAddress(const char *func_name) {
 
 cl_command_queue clCreateCommandQueue(cl_context context, cl_device_id device, cl_command_queue_properties properties,
                                       cl_int *errcode_ret) {
-    return nullptr;
+    auto castedContext = clmtl::Context::DownCast(context);
+
+    if (!castedContext) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_CONTEXT;
+        }
+
+        return nullptr;
+    }
+
+    auto castedDevice = clmtl::Device::DownCast(device);
+
+    if (!castedDevice || castedDevice != castedContext->GetDevice()) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_DEVICE;
+        }
+
+        return nullptr;
+    }
+
+    if (properties) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_QUEUE_PROPERTIES;
+        }
+
+        return nullptr;
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return new clmtl::CommandQueue(castedContext, castedDevice);
 }
 
 cl_sampler clCreateSampler(cl_context context, cl_bool normalized_coords, cl_addressing_mode addressing_mode,

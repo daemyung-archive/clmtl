@@ -34,6 +34,10 @@ Device::~Device() {
     mDevice->release();
 }
 
+MTL::Device *Device::GetDevice() const {
+    return mDevice;
+}
+
 DeviceLimits Device::GetLimits() const {
     return mLimits;
 }
