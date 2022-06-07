@@ -28,7 +28,7 @@ public:
     virtual ~_cl_platform_id() = default;
 };
 
-namespace clmtl {
+namespace cml {
 
 class Platform : public _cl_platform_id {
 public:
@@ -45,6 +45,6 @@ private:
     Platform();
 };
 
-} //namespace clmtl
+} //namespace cml
 
 #endif //CLMTL_PLATFORM_H

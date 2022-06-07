@@ -29,7 +29,7 @@ public:
     virtual ~_cl_context() = default;
 };
 
-namespace clmtl {
+namespace cml {
 
 class Device;
 
@@ -45,6 +45,6 @@ private:
     Device *mDevice;
 };
 
-} //namespace clmtl
+} //namespace cml
 
 #endif //CLMTL_CONTEXT_H

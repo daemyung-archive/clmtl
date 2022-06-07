@@ -41,7 +41,7 @@ cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint 
     }
 
     if (platforms) {
-        platforms[0] = clmtl::Platform::GetSingleton();
+        platforms[0] = cml::Platform::GetSingleton();
     }
 
     if (num_platforms) {
@@ -53,7 +53,7 @@ cl_int clGetPlatformIDs(cl_uint num_entries, cl_platform_id *platforms, cl_uint 
 
 cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, size_t param_value_size,
                          void *param_value, size_t *param_value_size_ret) {
-    if (platform != clmtl::Platform::GetSingleton()) {
+    if (platform != cml::Platform::GetSingleton()) {
         return CL_INVALID_PLATFORM;
     }
 
@@ -61,22 +61,22 @@ cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, s
 
     switch (param_name) {
         case CL_PLATFORM_PROFILE:
-            info = clmtl::Platform::GetProfile();
+            info = cml::Platform::GetProfile();
             break;
         case CL_PLATFORM_VERSION:
-            info = clmtl::Platform::GetVersion();
+            info = cml::Platform::GetVersion();
             break;
         case CL_PLATFORM_NAME:
-            info = clmtl::Platform::GetName();
+            info = cml::Platform::GetName();
             break;
         case CL_PLATFORM_VENDOR:
-            info = clmtl::Platform::GetVendor();
+            info = cml::Platform::GetVendor();
             break;
         case CL_PLATFORM_EXTENSIONS:
-            info = clmtl::Platform::GetExtensions();
+            info = cml::Platform::GetExtensions();
             break;
         case CL_PLATFORM_ICD_SUFFIX_KHR:
-            info = clmtl::Platform::GetSuffix();
+            info = cml::Platform::GetSuffix();
             break;
         default:
             return CL_INVALID_VALUE;
@@ -103,7 +103,7 @@ cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, s
 
 cl_int clGetDeviceIDs(cl_platform_id platform, cl_device_type device_type, cl_uint num_entries, cl_device_id *devices,
                       cl_uint *num_devices) {
-    if (platform && !clmtl::Platform::DownCast(platform)) {
+    if (platform && !cml::Platform::DownCast(platform)) {
         return CL_INVALID_PLATFORM;
     }
 
@@ -115,7 +115,7 @@ cl_int clGetDeviceIDs(cl_platform_id platform, cl_device_type device_type, cl_ui
         return CL_INVALID_VALUE;
     }
 
-    if (clmtl::Util::TestAnyFlagSet(device_type, CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_ACCELERATOR)) {
+    if (cml::Util::TestAnyFlagSet(device_type, CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_ACCELERATOR)) {
         return CL_DEVICE_NOT_FOUND;
     }
 
@@ -123,7 +123,7 @@ cl_int clGetDeviceIDs(cl_platform_id platform, cl_device_type device_type, cl_ui
         if (num_entries < 1) {
             return CL_INVALID_VALUE;
         } else {
-            devices[0] = clmtl::Device::GetSingleton();
+            devices[0] = cml::Device::GetSingleton();
         }
     }
 
@@ -136,13 +136,13 @@ cl_int clGetDeviceIDs(cl_platform_id platform, cl_device_type device_type, cl_ui
 
 cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t param_value_size, void *param_value,
                        size_t *param_value_size_ret) {
-    auto castedDevice = clmtl::Device::DownCast(device);
+    auto cmlDevice = cml::Device::DownCast(device);
 
-    if (!castedDevice) {
+    if (!cmlDevice) {
         return CL_INVALID_DEVICE;
     }
 
-    auto limits = castedDevice->GetLimits();
+    auto limits = cmlDevice->GetLimits();
     void *info;
     size_t size;
 
@@ -459,9 +459,9 @@ cl_context clCreateContext(const cl_context_properties *properties, cl_uint num_
                            void *user_data, cl_int *errcode_ret) {
     if (properties) {
         auto platform = reinterpret_cast<cl_platform_id>(
-                clmtl::Util::ReadProperty(properties, CL_CONTEXT_PLATFORM));
+                cml::Util::ReadProperty(properties, CL_CONTEXT_PLATFORM));
 
-        if (!platform || platform != clmtl::Platform::GetSingleton()) {
+        if (!platform || platform != cml::Platform::GetSingleton()) {
             if (errcode_ret) {
                 errcode_ret[0] = CL_INVALID_VALUE;
             }
@@ -486,7 +486,7 @@ cl_context clCreateContext(const cl_context_properties *properties, cl_uint num_
         return nullptr;
     }
 
-    if (devices[0] != clmtl::Device::GetSingleton()) {
+    if (devices[0] != cml::Device::GetSingleton()) {
         if (errcode_ret) {
             errcode_ret[0] = CL_INVALID_DEVICE;
         }
@@ -506,14 +506,14 @@ cl_context clCreateContext(const cl_context_properties *properties, cl_uint num_
         errcode_ret[0] = CL_SUCCESS;
     }
 
-    return new clmtl::Context();
+    return new cml::Context();
 }
 
 cl_context clCreateContextFromType(const cl_context_properties *properties, cl_device_type device_type,
                                    void (*pfn_notify)(const char *errinfo, const void *private_info, size_t cb,
                                                       void *user_data),
                                    void *user_data, cl_int *errcode_ret) {
-    if (!clmtl::Util::TestAnyFlagSet(device_type, CL_DEVICE_TYPE_DEFAULT | CL_DEVICE_TYPE_GPU)) {
+    if (!cml::Util::TestAnyFlagSet(device_type, CL_DEVICE_TYPE_DEFAULT | CL_DEVICE_TYPE_GPU)) {
         if (errcode_ret) {
             errcode_ret[0] = CL_DEVICE_NOT_FOUND;
         }
@@ -521,35 +521,35 @@ cl_context clCreateContextFromType(const cl_context_properties *properties, cl_d
         return nullptr;
     }
 
-    const cl_device_id devices[]{clmtl::Device::GetSingleton()};
+    const cl_device_id devices[]{cml::Device::GetSingleton()};
     assert(devices[0]);
 
     return clCreateContext(properties, 1, devices, pfn_notify, user_data, errcode_ret);
 }
 
 cl_int clRetainContext(cl_context context) {
-    auto castedContext = clmtl::Context::DownCast(context);
+    auto cmlContext = cml::Context::DownCast(context);
 
-    if (!castedContext) {
+    if (!cmlContext) {
         return CL_INVALID_CONTEXT;
     }
 
-    castedContext->Retain();
+    cmlContext->Retain();
 
     return CL_SUCCESS;
 }
 
 cl_int clReleaseContext(cl_context context) {
-    auto castedContext = clmtl::Context::DownCast(context);
+    auto cmlContext = cml::Context::DownCast(context);
 
-    if (!castedContext) {
+    if (!cmlContext) {
         return CL_INVALID_CONTEXT;
     }
 
-    castedContext->Release();
+    cmlContext->Release();
 
-    if (!castedContext->GetReferenceCount()) {
-        delete castedContext;
+    if (!cmlContext->GetReferenceCount()) {
+        delete cmlContext;
     }
 
     return CL_SUCCESS;
@@ -557,9 +557,9 @@ cl_int clReleaseContext(cl_context context) {
 
 cl_int clGetContextInfo(cl_context context, cl_context_info param_name, size_t param_value_size, void *param_value,
                         size_t *param_value_size_ret) {
-    auto castedContext = clmtl::Context::DownCast(context);
+    auto cmlContext = cml::Context::DownCast(context);
 
-    if (!castedContext) {
+    if (!cmlContext) {
         return CL_INVALID_CONTEXT;
     }
 
@@ -569,11 +569,11 @@ cl_int clGetContextInfo(cl_context context, cl_context_info param_name, size_t p
     switch (param_name) {
         case CL_CONTEXT_REFERENCE_COUNT:
             size = sizeof(cl_uint);
-            *((cl_uint *) info) = castedContext->GetReferenceCount();
+            *((cl_uint *) info) = cmlContext->GetReferenceCount();
             break;
         case CL_CONTEXT_DEVICES:
             size = sizeof(cl_device_id);
-            *((cl_device_id *) info) = castedContext->GetDevice();
+            *((cl_device_id *) info) = cmlContext->GetDevice();
             break;
         case CL_CONTEXT_PROPERTIES:
             size = sizeof(cl_context_properties);
@@ -621,28 +621,28 @@ cl_command_queue clCreateCommandQueueWithProperties(cl_context context, cl_devic
 #endif
 
 cl_int clRetainCommandQueue(cl_command_queue command_queue) {
-    auto castedCommandQueue = clmtl::CommandQueue::DownCast(command_queue);
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
 
-    if (!castedCommandQueue) {
+    if (!cmlCommandQueue) {
         return CL_INVALID_COMMAND_QUEUE;
     }
 
-    castedCommandQueue->Retain();
+    cmlCommandQueue->Retain();
 
     return CL_SUCCESS;
 }
 
 cl_int clReleaseCommandQueue(cl_command_queue command_queue) {
-    auto castedCommandQueue = clmtl::CommandQueue::DownCast(command_queue);
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
 
-    if (!castedCommandQueue) {
+    if (!cmlCommandQueue) {
         return CL_INVALID_COMMAND_QUEUE;
     }
 
-    castedCommandQueue->Release();
+    cmlCommandQueue->Release();
 
-    if (!castedCommandQueue->GetReferenceCount()) {
-        delete castedCommandQueue;
+    if (!cmlCommandQueue->GetReferenceCount()) {
+        delete cmlCommandQueue;
     }
 
     return CL_SUCCESS;
@@ -650,9 +650,9 @@ cl_int clReleaseCommandQueue(cl_command_queue command_queue) {
 
 cl_int clGetCommandQueueInfo(cl_command_queue command_queue, cl_command_queue_info param_name, size_t param_value_size,
                              void *param_value, size_t *param_value_size_ret) {
-    auto castedCommandQueue = clmtl::CommandQueue::DownCast(command_queue);
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
 
-    if (!castedCommandQueue) {
+    if (!cmlCommandQueue) {
         return CL_INVALID_COMMAND_QUEUE;
     }
 
@@ -662,15 +662,15 @@ cl_int clGetCommandQueueInfo(cl_command_queue command_queue, cl_command_queue_in
     switch (param_name) {
         case CL_QUEUE_CONTEXT:
             size = sizeof(cl_context);
-            *((cl_context *) info) = castedCommandQueue->GetContext();
+            *((cl_context *) info) = cmlCommandQueue->GetContext();
             break;
         case CL_QUEUE_DEVICE:
             size = sizeof(cl_device_id);
-            *((cl_device_id *) info) = castedCommandQueue->GetDevice();
+            *((cl_device_id *) info) = cmlCommandQueue->GetDevice();
             break;
         case CL_QUEUE_REFERENCE_COUNT:
             size = sizeof(cl_uint);
-            *((cl_uint *) info) = castedCommandQueue->GetReferenceCount();
+            *((cl_uint *) info) = cmlCommandQueue->GetReferenceCount();
             break;
         case CL_QUEUE_PROPERTIES:
             size = sizeof(cl_properties);
@@ -1312,7 +1312,7 @@ cl_int clUnloadCompiler(void) {
 }
 
 void *clGetExtensionFunctionAddress(const char *func_name) {
-    return func_name ? clmtl::Dispatch::GetExtensionSymbol(func_name) : nullptr;
+    return func_name ? cml::Dispatch::GetExtensionSymbol(func_name) : nullptr;
 }
 
 /***********************************************************************************************************************
@@ -1321,9 +1321,9 @@ void *clGetExtensionFunctionAddress(const char *func_name) {
 
 cl_command_queue clCreateCommandQueue(cl_context context, cl_device_id device, cl_command_queue_properties properties,
                                       cl_int *errcode_ret) {
-    auto castedContext = clmtl::Context::DownCast(context);
+    auto cmlContext = cml::Context::DownCast(context);
 
-    if (!castedContext) {
+    if (!cmlContext) {
         if (errcode_ret) {
             errcode_ret[0] = CL_INVALID_CONTEXT;
         }
@@ -1331,9 +1331,9 @@ cl_command_queue clCreateCommandQueue(cl_context context, cl_device_id device, c
         return nullptr;
     }
 
-    auto castedDevice = clmtl::Device::DownCast(device);
+    auto cmlDevice = cml::Device::DownCast(device);
 
-    if (!castedDevice || castedDevice != castedContext->GetDevice()) {
+    if (!cmlDevice || cmlDevice != cmlContext->GetDevice()) {
         if (errcode_ret) {
             errcode_ret[0] = CL_INVALID_DEVICE;
         }
@@ -1353,7 +1353,7 @@ cl_command_queue clCreateCommandQueue(cl_context context, cl_device_id device, c
         errcode_ret[0] = CL_SUCCESS;
     }
 
-    return new clmtl::CommandQueue(castedContext, castedDevice);
+    return new cml::CommandQueue(cmlContext, cmlDevice);
 }
 
 cl_sampler clCreateSampler(cl_context context, cl_bool normalized_coords, cl_addressing_mode addressing_mode,
@@ -1409,12 +1409,12 @@ cl_int clIcdGetPlatformIDsKHR(cl_uint num_entries, cl_platform_id *platforms, cl
         return CL_INVALID_VALUE;
     }
 
-    if (!clmtl::Platform::GetSingleton()) {
+    if (!cml::Platform::GetSingleton()) {
         return CL_PLATFORM_NOT_FOUND_KHR;
     }
 
     if (platforms) {
-        platforms[0] = clmtl::Platform::GetSingleton();
+        platforms[0] = cml::Platform::GetSingleton();
     }
 
     if (num_platforms) {

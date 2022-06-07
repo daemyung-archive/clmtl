@@ -24,7 +24,7 @@ _cl_device_id::_cl_device_id(cl_icd_dispatch *dispatch) :
     assert(Dispatch);
 }
 
-namespace clmtl {
+namespace cml {
 
 Device *Device::GetSingleton() {
     static Device sDevice;
@@ -119,4 +119,4 @@ void Device::InitLimits() {
     mLimits.CVersion = "OpenCL C 1.0";
 }
 
-} //namespace clmtl
+} //namespace cml

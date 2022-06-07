@@ -24,7 +24,7 @@ _cl_context::_cl_context(cl_icd_dispatch *dispatch) :
     assert(Dispatch);
 }
 
-namespace clmtl {
+namespace cml {
 
 Context *Context::DownCast(cl_context context) {
     return dynamic_cast<Context *>(context);
@@ -38,4 +38,4 @@ Device *Context::GetDevice() const {
     return mDevice;
 }
 
-} //namespace clmtl
+} //namespace cml

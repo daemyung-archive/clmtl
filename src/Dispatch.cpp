@@ -18,7 +18,7 @@
 
 #include "Dispatch.h"
 
-namespace clmtl {
+namespace cml {
 
 cl_icd_dispatch *Dispatch::GetTable() {
     static cl_icd_dispatch sDispatchTable{
@@ -110,4 +110,4 @@ void *Dispatch::GetExtensionSymbol(const std::string &symbolName) {
     return nullptr;
 }
 
-} //namespace clmtl
+} //namespace cml

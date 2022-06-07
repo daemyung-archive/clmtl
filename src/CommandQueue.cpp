@@ -25,7 +25,7 @@ _cl_command_queue::_cl_command_queue(cl_icd_dispatch *dispatch) :
     assert(Dispatch);
 }
 
-namespace clmtl {
+namespace cml {
 
 CommandQueue *CommandQueue::DownCast(cl_command_queue commandQueue) {
     return dynamic_cast<CommandQueue *>(commandQueue);
@@ -54,4 +54,4 @@ void CommandQueue::InitCommandQueue() {
     assert(mCommandQueue);
 }
 
-} //namespace clmtl
+} //namespace cml

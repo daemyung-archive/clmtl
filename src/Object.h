@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <atomic>
 
-namespace clmtl {
+namespace cml {
 
 class Object {
 public:
@@ -36,6 +36,6 @@ private:
     std::atomic<uint64_t> mReferenceCount;
 };
 
-} //namespace clmtl
+} //namespace cml
 
 #endif //CLMTL_OBJECT_H

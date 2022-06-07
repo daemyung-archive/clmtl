@@ -23,7 +23,7 @@ _cl_platform_id::_cl_platform_id(cl_icd_dispatch *dispatch) :
     assert(Dispatch);
 }
 
-namespace clmtl {
+namespace cml {
 
 Platform *Platform::GetSingleton() {
     static Platform sPlatform;
@@ -62,4 +62,4 @@ Platform::Platform()
         : _cl_platform_id{Dispatch::GetTable()} {
 }
 
-} //namespace clmtl
+} //namespace cml

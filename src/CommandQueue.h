@@ -30,7 +30,7 @@ public:
     virtual ~_cl_command_queue() = default;
 };
 
-namespace clmtl {
+namespace cml {
 
 class Context;
 class Device;
@@ -53,6 +53,6 @@ private:
     void InitCommandQueue();
 };
 
-} //namespace clmtl
+} //namespace cml
 
 #endif //CLMTL_COMMAND_QUEUE_H

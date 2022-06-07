@@ -20,7 +20,7 @@
 #include <cstdint>
 #include <CL/cl.h>
 
-namespace clmtl {
+namespace cml {
 
 class Util {
 public:
@@ -28,6 +28,6 @@ public:
     static intptr_t ReadProperty(const cl_context_properties *properties, uint64_t key);
 };
 
-} //namespace clmtl
+} //namespace cml
 
 #endif //CLMTL_UTIL_H

@@ -18,7 +18,7 @@
 
 #include <cassert>
 
-namespace clmtl {
+namespace cml {
 
 Object::~Object() {
     assert(!mReferenceCount);
@@ -40,4 +40,4 @@ Object::Object()
         : mReferenceCount{1} {
 }
 
-} //namespace clmtl
+} //namespace cml

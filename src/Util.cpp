@@ -16,7 +16,7 @@
 
 #include "Util.h"
 
-namespace clmtl {
+namespace cml {
 
 bool Util::TestAnyFlagSet(uint64_t bitset, uint64_t test) {
     return (bitset & test) != 0;
@@ -31,4 +31,4 @@ intptr_t Util::ReadProperty(const cl_context_properties *properties, uint64_t ke
     return 0;
 }
 
-} //namespace clmtl
+} //namespace cml

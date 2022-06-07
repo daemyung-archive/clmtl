@@ -29,7 +29,7 @@ public:
     virtual ~_cl_device_id() = default;
 };
 
-namespace clmtl {
+namespace cml {
 
 class Platform;
 
@@ -115,6 +115,6 @@ private:
     void InitLimits();
 };
 
-} //namespace clmtl
+} //namespace cml
 
 #endif //CLMTL_DEVICE_H

@@ -20,7 +20,7 @@
 #include <string>
 #include <CL/cl_icd.h>
 
-namespace clmtl {
+namespace cml {
 
 class Dispatch {
 public:
@@ -28,6 +28,6 @@ public:
     static void *GetExtensionSymbol(const std::string &symbolName);
 };
 
-} //namespace clmtl
+} //namespace cml
 
 #endif //CLMTL_DISPATCH_H
