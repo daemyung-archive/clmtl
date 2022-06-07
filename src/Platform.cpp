@@ -18,6 +18,11 @@
 
 #include "Dispatch.h"
 
+_cl_platform_id::_cl_platform_id(cl_icd_dispatch *dispatch) :
+        Dispatch{dispatch} {
+    assert(Dispatch);
+}
+
 namespace clmtl {
 
 Platform *Platform::GetSingleton() {
@@ -26,7 +31,7 @@ Platform *Platform::GetSingleton() {
 }
 
 Platform *Platform::DownCast(_cl_platform_id *platform) {
-    return (Platform *) platform;
+    return dynamic_cast<Platform *>(platform);
 }
 
 std::string Platform::GetProfile() {
@@ -55,7 +60,6 @@ std::string Platform::GetSuffix() {
 
 Platform::Platform()
         : _cl_platform_id{Dispatch::GetTable()} {
-    assert(Dispatch);
 }
 
 } //namespace clmtl

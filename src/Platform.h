@@ -20,8 +20,12 @@
 #include <string>
 #include <CL/cl_icd.h>
 
-struct _cl_platform_id {
+class _cl_platform_id {
+public:
     cl_icd_dispatch *Dispatch;
+
+    explicit _cl_platform_id(cl_icd_dispatch *dispatch);
+    virtual ~_cl_platform_id() = default;
 };
 
 namespace clmtl {

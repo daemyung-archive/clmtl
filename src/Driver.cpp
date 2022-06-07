@@ -103,7 +103,7 @@ cl_int clGetPlatformInfo(cl_platform_id platform, cl_platform_info param_name, s
 
 cl_int clGetDeviceIDs(cl_platform_id platform, cl_device_type device_type, cl_uint num_entries, cl_device_id *devices,
                       cl_uint *num_devices) {
-    if (platform && platform != clmtl::Platform::GetSingleton()) {
+    if (platform && !clmtl::Platform::DownCast(platform)) {
         return CL_INVALID_PLATFORM;
     }
 
@@ -136,11 +136,13 @@ cl_int clGetDeviceIDs(cl_platform_id platform, cl_device_type device_type, cl_ui
 
 cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t param_value_size, void *param_value,
                        size_t *param_value_size_ret) {
-    if (!device) {
+    auto castedDevice = clmtl::Device::DownCast(device);
+
+    if (!castedDevice) {
         return CL_INVALID_DEVICE;
     }
 
-    auto limits = clmtl::Device::DownCast(device)->GetLimits();
+    auto limits = castedDevice->GetLimits();
     void *info;
     size_t size;
 

@@ -21,8 +21,12 @@
 
 #include "Object.h"
 
-struct _cl_context {
+class _cl_context {
+public:
     cl_icd_dispatch *Dispatch;
+
+    explicit _cl_context(cl_icd_dispatch *dispatch);
+    virtual ~_cl_context() = default;
 };
 
 namespace clmtl {

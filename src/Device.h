@@ -21,8 +21,12 @@
 #include <CL/cl_icd.h>
 #include <Metal/Metal.hpp>
 
-struct _cl_device_id {
+class _cl_device_id {
+public:
     cl_icd_dispatch *Dispatch;
+
+    explicit _cl_device_id(cl_icd_dispatch *dispatch);
+    virtual ~_cl_device_id() = default;
 };
 
 namespace clmtl {
@@ -99,7 +103,7 @@ public:
     static Device *DownCast(_cl_device_id *device);
 
 public:
-    ~Device();
+    ~Device() override;
     MTL::Device *GetDevice() const;
     DeviceLimits GetLimits() const;
 

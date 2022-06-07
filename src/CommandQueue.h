@@ -22,8 +22,12 @@
 
 #include "Object.h"
 
-struct _cl_command_queue {
+class _cl_command_queue {
+public:
     cl_icd_dispatch *Dispatch;
+
+    explicit _cl_command_queue(cl_icd_dispatch *dispatch);
+    virtual ~_cl_command_queue() = default;
 };
 
 namespace clmtl {

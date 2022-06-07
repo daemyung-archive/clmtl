@@ -19,15 +19,19 @@
 #include "Dispatch.h"
 #include "Device.h"
 
+_cl_context::_cl_context(cl_icd_dispatch *dispatch) :
+        Dispatch{dispatch} {
+    assert(Dispatch);
+}
+
 namespace clmtl {
 
 Context *Context::DownCast(cl_context context) {
-    return (Context *) context;
+    return dynamic_cast<Context *>(context);
 }
 
 Context::Context()
         : _cl_context{Dispatch::GetTable()}, Object{}, mDevice{Device::GetSingleton()} {
-    assert(Dispatch);
 }
 
 Device *Context::GetDevice() const {

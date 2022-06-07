@@ -20,16 +20,20 @@
 #include "Context.h"
 #include "Device.h"
 
+_cl_command_queue::_cl_command_queue(cl_icd_dispatch *dispatch) :
+        Dispatch{dispatch} {
+    assert(Dispatch);
+}
+
 namespace clmtl {
 
 CommandQueue *CommandQueue::DownCast(cl_command_queue commandQueue) {
-    return (CommandQueue *) commandQueue;
+    return dynamic_cast<CommandQueue *>(commandQueue);
 }
 
 CommandQueue::CommandQueue(Context *context, Device *device)
         : _cl_command_queue{Dispatch::GetTable()}, Object{}, mContext{context}, mDevice{device},
           mCommandQueue{nullptr} {
-    assert(Dispatch);
     InitCommandQueue();
 }
 

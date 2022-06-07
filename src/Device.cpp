@@ -19,6 +19,11 @@
 #include "Dispatch.h"
 #include "Platform.h"
 
+_cl_device_id::_cl_device_id(cl_icd_dispatch *dispatch) :
+        Dispatch{dispatch} {
+    assert(Dispatch);
+}
+
 namespace clmtl {
 
 Device *Device::GetSingleton() {
@@ -27,7 +32,7 @@ Device *Device::GetSingleton() {
 }
 
 Device *Device::DownCast(_cl_device_id *device) {
-    return reinterpret_cast<Device *>(device);
+    return dynamic_cast<Device *>(device);
 }
 
 Device::~Device() {
@@ -44,7 +49,6 @@ DeviceLimits Device::GetLimits() const {
 
 Device::Device()
         : _cl_device_id{Dispatch::GetTable()}, mDevice{MTL::CreateSystemDefaultDevice()} {
-    assert(Dispatch);
     InitLimits();
 }
 
