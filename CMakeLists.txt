@@ -51,6 +51,7 @@ target_link_libraries(clmtl
     PUBLIC
         khronos
         apple
+        clspv
 )
 
 add_subdirectory(demo)

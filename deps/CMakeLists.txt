@@ -16,3 +16,4 @@
 
 add_subdirectory(khronos)
 add_subdirectory(apple)
+add_subdirectory(clspv)
