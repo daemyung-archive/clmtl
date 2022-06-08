@@ -35,9 +35,28 @@ add_library(khronos INTERFACE
         include/CL/cl_platform.h
         include/CL/cl_va_api_media_sharing_intel.h
         include/CL/cl_version.h
+        include/spirv-tools/instrument.hpp
+        include/spirv-tools/libspirv.h
+        include/spirv-tools/libspirv.hpp
+        include/spirv-tools/linker.hpp
+        include/spirv-tools/optimizer.hpp
 )
 
 target_include_directories(khronos
     INTERFACE
         include
+)
+
+target_link_directories(khronos
+    INTERFACE
+        lib)
+
+target_link_libraries(khronos
+    INTERFACE
+        libSPIRV-Tools.a
+        libSPIRV-Tools-diff.a
+        libSPIRV-Tools-link.a
+        libSPIRV-Tools-lint.a
+        libSPIRV-Tools-opt.a
+        libSPIRV-Tools-reduce.a
 )
