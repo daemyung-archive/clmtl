@@ -35,6 +35,8 @@ add_library(clmtl
         src/Context.cpp
         src/CommandQueue.h
         src/CommandQueue.cpp
+        src/Program.h
+        src/Program.cpp
 )
 
 target_compile_features(clmtl

@@ -22,6 +22,7 @@
 #include "Device.h"
 #include "Context.h"
 #include "CommandQueue.h"
+#include "Program.h"
 
 /***********************************************************************************************************************
 * OpenCL Core APIs
@@ -830,13 +831,132 @@ cl_int clGetSamplerInfo(cl_sampler sampler, cl_sampler_info param_name, size_t p
 
 cl_program clCreateProgramWithSource(cl_context context, cl_uint count, const char **strings, const size_t *lengths,
                                      cl_int *errcode_ret) {
-    return nullptr;
+    if (!count) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_VALUE;
+        }
+
+        return nullptr;
+    }
+
+    for (auto i = 0; i != count; ++i) {
+        if (!strings[i]) {
+            if (errcode_ret) {
+                errcode_ret[0] = CL_INVALID_VALUE;
+            }
+
+            return nullptr;
+        }
+    }
+
+    auto cmlContext = cml::Context::DownCast(context);
+
+    if (!cmlContext) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_CONTEXT;
+        }
+
+        return nullptr;
+    }
+
+
+    auto cmlProgram = new cml::Program(cmlContext);
+    assert(cmlProgram);
+
+    for (auto i = 0; i != count; ++i) {
+        cmlProgram->AddSource(lengths ? std::string(strings[i], lengths[i]) : strings[i]);
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return cmlProgram;
 }
 
 cl_program clCreateProgramWithBinary(cl_context context, cl_uint num_devices, const cl_device_id *device_list,
                                      const size_t *lengths, const unsigned char **binaries, cl_int *binary_status,
                                      cl_int *errcode_ret) {
-    return nullptr;
+
+    if (!num_devices && !device_list) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_VALUE;
+        }
+
+        return nullptr;
+    }
+
+    if (num_devices > 1) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_DEVICE;
+        }
+
+        return nullptr;
+    }
+
+    if (!lengths || !binaries) {
+        if (binary_status) {
+            binary_status[0] = CL_INVALID_BINARY;
+        }
+
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_VALUE;
+        }
+
+        return nullptr;
+    }
+
+    if (!lengths[0] || !binaries[0]) {
+        if (binary_status) {
+            binary_status[0] = CL_INVALID_BINARY;
+        }
+
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_VALUE;
+        }
+
+        return nullptr;
+    }
+
+
+    auto cmlContext = cml::Context::DownCast(context);
+
+    if (!cmlContext) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_CONTEXT;
+        }
+
+        return nullptr;
+    }
+
+    auto cmlProgram = new cml::Program(cmlContext);
+    assert(cmlProgram);
+
+    std::vector<uint32_t> binary(binaries[0], binaries[0] + lengths[0]);
+
+    if (binary.size() * sizeof(uint32_t) != lengths[0]) {
+        if (binary_status) {
+            binary_status[0] = CL_INVALID_BINARY;
+        }
+
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_BINARY;
+        }
+
+        return nullptr;
+    }
+
+    cmlProgram->SetBinary(binary);
+
+    if (binary_status) {
+        binary_status[0] = CL_SUCCESS;
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return cmlProgram;
 }
 
 #ifdef CL_VERSION_1_2
@@ -857,16 +977,76 @@ cl_program clCreateProgramWithIL(cl_context context, const void *il, size_t leng
 #endif
 
 cl_int clRetainProgram(cl_program program) {
-    return CL_INVALID_PROGRAM;
+    auto cmlProgram = cml::Program::DownCast(program);
+
+    if (!cmlProgram) {
+        return CL_INVALID_PROGRAM;
+    }
+
+    cmlProgram->Retain();
+
+    return CL_SUCCESS;
 }
 
 cl_int clReleaseProgram(cl_program program) {
-    return CL_INVALID_PROGRAM;
+    auto cmlProgram = cml::Program::DownCast(program);
+
+    if (!cmlProgram) {
+        return CL_INVALID_PROGRAM;
+    }
+
+    cmlProgram->Retain();
+
+    if (!cmlProgram->GetReferenceCount()) {
+        delete cmlProgram;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clBuildProgram(cl_program program, cl_uint num_devices, const cl_device_id *device_list, const char *options,
                       void (*pfn_notify)(cl_program program, void *user_data), void *user_data) {
-    return CL_INVALID_PROGRAM;
+    if (num_devices && !device_list) {
+        return CL_INVALID_VALUE;
+    }
+
+    if (!num_devices && device_list) {
+        return CL_INVALID_VALUE;
+    }
+
+    if (!pfn_notify && user_data) {
+        return CL_INVALID_VALUE;
+    }
+
+    for (auto i = 0; i != num_devices; ++i) {
+        if (!cml::Device::DownCast(device_list[i])) {
+            return CL_INVALID_DEVICE;
+        }
+    }
+
+    auto cmlProgram = cml::Program::DownCast(program);
+
+    if (!cmlProgram) {
+        return CL_INVALID_PROGRAM;
+    }
+
+    if (options) {
+        cmlProgram->SetOptions(options);
+    }
+
+    auto binaries = cmlProgram->Compile();
+
+    if (cmlProgram->GetBuildStatus() != CL_BUILD_SUCCESS) {
+        return CL_BUILD_PROGRAM_FAILURE;
+    }
+
+    cmlProgram->Link(binaries);
+
+    if (cmlProgram->GetBuildStatus() != CL_BUILD_SUCCESS) {
+        return CL_BUILD_PROGRAM_FAILURE;
+    }
+
+    return CL_SUCCESS;
 }
 
 #ifdef CL_VERSION_1_2
@@ -910,12 +1090,104 @@ cl_int clUnloadPlatformCompiler(cl_platform_id platform) {
 
 cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value,
                         size_t *param_value_size_ret) {
-    return CL_INVALID_PROGRAM;
+    auto cmlProgram = cml::Program::DownCast(program);
+
+    if (!cmlProgram) {
+        return CL_INVALID_PROGRAM;
+    }
+
+    size_t size;
+    uint8_t info[2048];
+
+    switch (param_name) {
+        case CL_PROGRAM_REFERENCE_COUNT:
+            size = sizeof(cl_uint);
+            *((cl_uint *) info) = cmlProgram->GetReferenceCount();
+            break;
+        case CL_PROGRAM_CONTEXT:
+            size = sizeof(cl_context);
+            *((cl_context *) info) = cmlProgram->GetContext();
+            break;
+        case CL_PROGRAM_NUM_DEVICES:
+            size = sizeof(cl_uint);
+            *((cl_uint *) info) = 1;
+            break;
+        case CL_PROGRAM_DEVICES:
+            size = sizeof(cl_properties);
+            *((cl_properties *) info) = 0;
+            break;
+        case CL_PROGRAM_SOURCE:
+            size = cmlProgram->GetSource().size() + 1;
+            memcpy(info, cmlProgram->GetSource().data(), size);
+            break;
+        case CL_PROGRAM_BINARY_SIZES:
+            size = sizeof(size_t);
+            *((size_t *) info) = cmlProgram->GetBinary().size();
+            break;
+        case CL_PROGRAM_BINARIES:
+            size = sizeof(uint32_t) * cmlProgram->GetBinary().size();
+            memcpy(info, cmlProgram->GetBinary().data(), size);
+            break;
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size < size) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info, size);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = size;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clGetProgramBuildInfo(cl_program program, cl_device_id device, cl_program_build_info param_name,
                              size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-    return CL_INVALID_PROGRAM;
+    auto cmlProgram = cml::Program::DownCast(program);
+
+    if (!cmlProgram) {
+        return CL_INVALID_PROGRAM;
+    }
+
+    size_t size;
+    uint8_t info[2048];
+
+    switch (param_name) {
+        case CL_PROGRAM_BUILD_STATUS:
+            size = sizeof(cl_build_status);
+            *((cl_build_status *) info) = cmlProgram->GetBuildStatus();
+            break;
+        case CL_PROGRAM_BUILD_OPTIONS:
+            size = cmlProgram->GetOptions().size() + 1;
+            memcpy(info, cmlProgram->GetOptions().data(), size);
+            break;
+        case CL_PROGRAM_BUILD_LOG:
+            size = cmlProgram->GetLog().size() + 1;
+            memcpy(info, cmlProgram->GetLog().data(), size);
+            break;
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size < size) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info, size);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = size;
+    }
+
+    return CL_SUCCESS;
 }
 
 /***********************************************************************************************************************
