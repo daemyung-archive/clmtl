@@ -40,6 +40,19 @@ add_library(khronos INTERFACE
         include/spirv-tools/libspirv.hpp
         include/spirv-tools/linker.hpp
         include/spirv-tools/optimizer.hpp
+        include/spirv_cross/GLSL.std.450.h
+        include/spirv_cross/spirv.hpp
+        include/spirv_cross/spirv_cfg.hpp
+        include/spirv_cross/spirv_common.hpp
+        include/spirv_cross/spirv_cross.hpp
+        include/spirv_cross/spirv_cross_containers.hpp
+        include/spirv_cross/spirv_cross_error_handling.hpp
+        include/spirv_cross/spirv_cross_parsed_ir.hpp
+        include/spirv_cross/spirv_cross_util.hpp
+        include/spirv_cross/spirv_glsl.hpp
+        include/spirv_cross/spirv_msl.hpp
+        include/spirv_cross/spirv_parser.hpp
+        include/spirv_cross/spirv_reflect.hpp
 )
 
 target_include_directories(khronos
@@ -59,4 +72,9 @@ target_link_libraries(khronos
         libSPIRV-Tools-lint.a
         libSPIRV-Tools-opt.a
         libSPIRV-Tools-reduce.a
+        libspirv-cross-core.a
+        libspirv-cross-glsl.a
+        libspirv-cross-msl.a
+        libspirv-cross-reflect.a
+        libspirv-cross-util.a
 )
