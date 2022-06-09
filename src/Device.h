@@ -32,6 +32,7 @@ public:
 namespace cml {
 
 class Platform;
+class LibraryPool;
 
 struct DeviceLimits {
     cl_device_type Type;
@@ -106,10 +107,12 @@ public:
     ~Device() override;
     MTL::Device *GetDevice() const;
     DeviceLimits GetLimits() const;
+    LibraryPool *GetLibraryPool() const;
 
 private:
     MTL::Device *mDevice;
     DeviceLimits mLimits;
+    std::unique_ptr<LibraryPool> mLibraryPool;
 
     Device();
     void InitLimits();

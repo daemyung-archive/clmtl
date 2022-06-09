@@ -27,6 +27,8 @@ add_library(clmtl
         src/Util.cpp
         src/Platform.h
         src/Platform.cpp
+        src/LibraryPool.h
+        src/LibraryPool.cpp
         src/Device.h
         src/Device.cpp
         src/Object.h
@@ -37,6 +39,8 @@ add_library(clmtl
         src/CommandQueue.cpp
         src/Program.h
         src/Program.cpp
+        src/Kernel.h
+        src/Kernel.cpp
 )
 
 target_compile_features(clmtl

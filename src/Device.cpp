@@ -18,6 +18,7 @@
 
 #include "Dispatch.h"
 #include "Platform.h"
+#include "LibraryPool.h"
 
 _cl_device_id::_cl_device_id(cl_icd_dispatch *dispatch) :
         Dispatch{dispatch} {
@@ -47,8 +48,13 @@ DeviceLimits Device::GetLimits() const {
     return mLimits;
 }
 
-Device::Device()
-        : _cl_device_id{Dispatch::GetTable()}, mDevice{MTL::CreateSystemDefaultDevice()} {
+LibraryPool *Device::GetLibraryPool() const {
+    return mLibraryPool.get();
+}
+
+Device::Device() :
+        _cl_device_id{Dispatch::GetTable()}, mDevice{MTL::CreateSystemDefaultDevice()},
+        mLibraryPool{std::make_unique<LibraryPool>(this)} {
     InitLimits();
 }
 

@@ -23,6 +23,7 @@
 #include "Context.h"
 #include "CommandQueue.h"
 #include "Program.h"
+#include "Kernel.h"
 
 /***********************************************************************************************************************
 * OpenCL Core APIs
@@ -1195,11 +1196,43 @@ cl_int clGetProgramBuildInfo(cl_program program, cl_device_id device, cl_program
 ***********************************************************************************************************************/
 
 cl_kernel clCreateKernel(cl_program program, const char *kernel_name, cl_int *errcode_ret) {
-    return nullptr;
+    if (!kernel_name) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_VALUE;
+        }
+
+        return nullptr;
+    }
+
+    auto cmlProgram = cml::Program::DownCast(program);
+
+    if (!cmlProgram) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_PROGRAM;
+        }
+
+        return nullptr;
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return new cml::Kernel(cmlProgram, kernel_name);
 }
 
 cl_int clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kernel *kernels, cl_uint *num_kernels_ret) {
-    return CL_INVALID_PROGRAM;
+    if (!num_kernels && kernels) {
+        return CL_INVALID_VALUE;
+    }
+
+    auto cmlProgram = cml::Program::DownCast(program);
+
+    if (!cmlProgram) {
+        return CL_INVALID_PROGRAM;
+    }
+
+    return CL_OUT_OF_RESOURCES;
 }
 
 #ifdef CL_VERSION_2_1
@@ -1211,14 +1244,46 @@ cl_kernel clCloneKernel(cl_kernel source_kernel, cl_int *errcode_ret) {
 #endif
 
 cl_int clRetainKernel(cl_kernel kernel) {
-    return CL_INVALID_KERNEL;
+    auto cmlKernel = cml::Kernel::DownCast(kernel);
+
+    if (!cmlKernel) {
+        return CL_INVALID_KERNEL;
+    }
+
+    cmlKernel->Retain();
+
+    return CL_SUCCESS;
 }
 
 cl_int clReleaseKernel(cl_kernel kernel) {
-    return CL_INVALID_KERNEL;
+    auto cmlKernel = cml::Kernel::DownCast(kernel);
+
+    if (!cmlKernel) {
+        return CL_INVALID_KERNEL;
+    }
+
+    cmlKernel->Release();
+
+    if (!cmlKernel->GetReferenceCount()) {
+        delete cmlKernel;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, const void *arg_value) {
+    auto cmlKernel = cml::Kernel::DownCast(kernel);
+
+    if (!cmlKernel) {
+        return CL_INVALID_KERNEL;
+    }
+
+    auto cmlArgumentTable = cmlKernel->GetArgumentTable();
+
+    if (arg_index >= cmlArgumentTable.size()) {
+        return CL_INVALID_ARG_INDEX;
+    }
+
     return CL_INVALID_KERNEL;
 }
 
@@ -1237,7 +1302,53 @@ cl_int clSetKernelExecInfo(cl_kernel kernel, cl_kernel_exec_info param_name, siz
 
 cl_int clGetKernelInfo(cl_kernel kernel, cl_kernel_info param_name, size_t param_value_size, void *param_value,
                        size_t *param_value_size_ret) {
-    return CL_INVALID_KERNEL;
+    auto cmlKernel = cml::Kernel::DownCast(kernel);
+
+    if (!cmlKernel) {
+        return CL_INVALID_KERNEL;
+    }
+
+    size_t size;
+    uint8_t info[2048];
+
+    switch (param_name) {
+        case CL_KERNEL_FUNCTION_NAME:
+            size = cmlKernel->GetName().size() + 1;
+            memcpy(info, cmlKernel->GetName().data(), size);
+            break;
+        case CL_KERNEL_NUM_ARGS:
+            size = sizeof(cl_uint);
+            *((cl_uint *) info) = 0;
+            break;
+        case CL_KERNEL_REFERENCE_COUNT:
+            size = sizeof(cl_uint);
+            *((cl_uint *) info) = cmlKernel->GetReferenceCount();
+            break;
+        case CL_KERNEL_CONTEXT:
+            size = sizeof(cl_context);
+            *((cl_context *) info) = cmlKernel->GetContext();
+            break;
+        case CL_KERNEL_PROGRAM:
+            size = sizeof(cl_program);
+            *((cl_program *) info) = cmlKernel->GetProgram();
+            break;
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size < size) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info, size);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = size;
+    }
+
+    return CL_SUCCESS;
 }
 
 #ifdef CL_VERSION_1_2
@@ -1251,7 +1362,59 @@ cl_int clGetKernelArgInfo(cl_kernel kernel, cl_uint arg_indx, cl_kernel_arg_info
 
 cl_int clGetKernelWorkGroupInfo(cl_kernel kernel, cl_device_id device, cl_kernel_work_group_info param_name,
                                 size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
-    return CL_INVALID_KERNEL;
+    auto cmlKernel = cml::Kernel::DownCast(kernel);
+
+    if (!cmlKernel) {
+        return CL_INVALID_KERNEL;
+    }
+
+    auto cmlDevice = cml::Device::DownCast(device);
+
+    if (!cmlDevice) {
+        return CL_INVALID_DEVICE;
+    }
+
+    size_t size;
+    uint8_t info[2048];
+
+    switch (param_name) {
+        case CL_KERNEL_WORK_GROUP_SIZE:
+            size = sizeof(size_t);
+            *((size_t *) info) = cmlKernel->GetWorkGroupSize();
+            break;
+        case CL_KERNEL_COMPILE_WORK_GROUP_SIZE:
+            size = sizeof(size_t) * 3;
+            memset(info, 0, size);
+            break;
+        case CL_KERNEL_LOCAL_MEM_SIZE:
+            size = sizeof(cl_ulong);
+            *((cl_ulong *) info) = 0;
+            break;
+        case CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE:
+            size = sizeof(size_t);
+            *((size_t *) info) = cmlKernel->GetWorkItemExecutionWidth();
+            break;
+        case CL_KERNEL_PRIVATE_MEM_SIZE:
+            size = sizeof(cl_ulong);
+            *((cl_ulong *) info) = 0;
+            break;
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size < size) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info, size);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = size;
+    }
+
+    return CL_SUCCESS;
 }
 
 #ifdef CL_VERSION_2_1
