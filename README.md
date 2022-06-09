@@ -11,7 +11,8 @@
 </h4>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/1.0-in%20progress-yellow">
+    <img src="https://github.com/daemyung/clmtl/actions/workflows/build.yml/badge.svg">
+    <img src="https://img.shields.io/badge/OpenCL-%3C%3D1.0-yellow">
 </p>
 
 <p align="center">
@@ -25,7 +26,7 @@
 
 ## Build
 
-Create a build directory and generate build script. 
+Create a build directory and configure CMake.
 
 ```shell
 mkdir build
