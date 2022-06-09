@@ -22,6 +22,7 @@
 #include "Device.h"
 #include "Context.h"
 #include "CommandQueue.h"
+#include "Buffer.h"
 #include "Program.h"
 #include "Kernel.h"
 
@@ -697,9 +698,58 @@ cl_int clGetCommandQueueInfo(cl_command_queue command_queue, cl_command_queue_in
     return CL_SUCCESS;
 }
 
-/* Memory Object APIs */
+/***********************************************************************************************************************
+* Memory Object APIs
+***********************************************************************************************************************/
+
 cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void *host_ptr, cl_int *errcode_ret) {
-    return nullptr;
+    if (!size || size > CL_INVALID_BUFFER_SIZE) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_BUFFER_SIZE;
+        }
+
+        return nullptr;
+    }
+
+    if (host_ptr && !cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR)) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_HOST_PTR;
+        }
+
+        return nullptr;
+    }
+
+    if (cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR) && !host_ptr) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_HOST_PTR;
+        }
+
+        return nullptr;
+    }
+
+    if (cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR)) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        }
+
+        return nullptr;
+    }
+
+    auto cmlContext = cml::Context::DownCast(context);
+
+    if (!cmlContext) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_CONTEXT;
+        }
+
+        return nullptr;
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return new cml::Buffer(cmlContext, size, flags);
 }
 
 #ifdef CL_VERSION_1_1
@@ -745,11 +795,31 @@ cl_mem clCreateImageWithProperties(cl_context context, const cl_mem_properties *
 #endif
 
 cl_int clRetainMemObject(cl_mem memobj) {
-    return CL_INVALID_MEM_OBJECT;
+    auto cmlBuffer = cml::Buffer::DownCast(memobj);
+
+    if (!cmlBuffer) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    cmlBuffer->Retain();
+
+    return CL_SUCCESS;
 }
 
 cl_int clReleaseMemObject(cl_mem memobj) {
-    return CL_INVALID_MEM_OBJECT;
+    auto cmlBuffer = cml::Buffer::DownCast(memobj);
+
+    if (!cmlBuffer) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    cmlBuffer->Release();
+
+    if (!cmlBuffer->GetReferenceCount()) {
+        delete cmlBuffer;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clGetSupportedImageFormats(cl_context context, cl_mem_flags flags, cl_mem_object_type image_type,
@@ -759,7 +829,61 @@ cl_int clGetSupportedImageFormats(cl_context context, cl_mem_flags flags, cl_mem
 
 cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_value_size, void *param_value,
                           size_t *param_value_size_ret) {
-    return CL_INVALID_MEM_OBJECT;
+    auto cmlBuffer = cml::Buffer::DownCast(memobj);
+
+    if (!cmlBuffer) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    size_t size;
+    uint8_t info[2048];
+
+    switch (param_name) {
+        case CL_MEM_TYPE:
+            size = sizeof(cl_mem_object_type);
+            *((cl_mem_object_type *) info) = CL_MEM_OBJECT_BUFFER;
+            break;
+        case CL_MEM_FLAGS:
+            size = sizeof(cl_mem_flags);
+            *((cl_mem_flags *) info) = cmlBuffer->GetMemFlags();
+            break;
+        case CL_MEM_SIZE:
+            size = sizeof(cl_uint);
+            *((cl_uint *) info) = cmlBuffer->GetSize();
+            break;
+        case CL_MEM_HOST_PTR:
+            size = sizeof(void *);
+            memset(info, 0, size);
+            break;
+        case CL_MEM_MAP_COUNT:
+            size = sizeof(cl_uint);
+            *((cl_uint *) info) = cmlBuffer->GetMapCount();
+            break;
+        case CL_MEM_REFERENCE_COUNT:
+            size = sizeof(cl_uint);
+            *((cl_uint *) info) = cmlBuffer->GetReferenceCount();
+            break;
+        case CL_MEM_CONTEXT:
+            size = sizeof(cl_context);
+            *((cl_context *) info) = cmlBuffer->GetContext();
+            break;
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size < size) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info, size);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = size;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clGetImageInfo(cl_mem image, cl_image_info param_name, size_t param_value_size, void *param_value,
