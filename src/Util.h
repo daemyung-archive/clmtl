@@ -18,6 +18,7 @@
 #define CLMTL_UTIL_H
 
 #include <cstdint>
+#include <array>
 #include <CL/cl.h>
 
 namespace cml {

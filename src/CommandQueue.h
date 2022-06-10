@@ -17,6 +17,8 @@
 #ifndef CLMTL_COMMAND_QUEUE_H
 #define CLMTL_COMMAND_QUEUE_H
 
+#include <array>
+#include <vector>
 #include <CL/cl_icd.h>
 #include <Metal/Metal.hpp>
 
@@ -34,6 +36,8 @@ namespace cml {
 
 class Context;
 class Device;
+class Buffer;
+class Kernel;
 
 class CommandQueue : public _cl_command_queue, public Object {
 public:
@@ -42,6 +46,10 @@ public:
 public:
     CommandQueue(Context *context, Device *device);
     ~CommandQueue() override;
+    void EnqueueReadBuffer(Buffer *srcBuffer, void *dstData, size_t offset, size_t size);
+    void EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, size_t offset, size_t size);
+    void Flush();
+    void WaitIdle();
     Context *GetContext() const;
     Device *GetDevice() const;
 
@@ -49,8 +57,11 @@ private:
     Context *mContext;
     Device *mDevice;
     MTL::CommandQueue *mCommandQueue;
+    MTL::CommandBuffer *mCommandBuffer;
+    std::vector<MTL::CommandBuffer *> mCommittedCommandBuffer;
 
     void InitCommandQueue();
+    void InitCommandBuffer();
 };
 
 } //namespace cml

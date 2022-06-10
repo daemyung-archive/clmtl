@@ -19,6 +19,8 @@
 #include "Dispatch.h"
 #include "Context.h"
 #include "Device.h"
+#include "Buffer.h"
+#include "Kernel.h"
 
 _cl_command_queue::_cl_command_queue(cl_icd_dispatch *dispatch) :
         Dispatch{dispatch} {
@@ -31,14 +33,67 @@ CommandQueue *CommandQueue::DownCast(cl_command_queue commandQueue) {
     return dynamic_cast<CommandQueue *>(commandQueue);
 }
 
-CommandQueue::CommandQueue(Context *context, Device *device)
-        : _cl_command_queue{Dispatch::GetTable()}, Object{}, mContext{context}, mDevice{device},
-          mCommandQueue{nullptr} {
+CommandQueue::CommandQueue(Context *context, Device *device) :
+        _cl_command_queue{Dispatch::GetTable()}, Object{}, mContext{context}, mDevice{device},
+        mCommandQueue{}, mCommandBuffer{}, mCommittedCommandBuffer{} {
     InitCommandQueue();
+    InitCommandBuffer();
 }
 
 CommandQueue::~CommandQueue() {
+    WaitIdle();
+    mCommandBuffer->release();
     mCommandQueue->release();
+}
+
+void CommandQueue::EnqueueReadBuffer(Buffer *srcBuffer, void *dstData, size_t offset, size_t size) {
+    auto commandEncoder = mCommandBuffer->blitCommandEncoder();
+    assert(commandEncoder);
+
+    auto dstBuffer = new Buffer(mContext, CL_MEM_ALLOC_HOST_PTR, size);
+    assert(dstBuffer);
+
+    commandEncoder->copyFromBuffer(srcBuffer->GetBuffer(), 0, dstBuffer->GetBuffer(), offset, size);
+    commandEncoder->endEncoding();
+    commandEncoder->release();
+    mCommandBuffer->addCompletedHandler([dstData, dstBuffer](MTL::CommandBuffer *commandBuffer) {
+        memcpy(dstData, dstBuffer->Map(), dstBuffer->GetSize());
+        dstBuffer->Unmap();
+        dstBuffer->Release();
+        delete dstBuffer;
+    });
+}
+
+void CommandQueue::EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, size_t offset, size_t size) {
+    auto commandEncoder = mCommandBuffer->blitCommandEncoder();
+    assert(commandEncoder);
+
+    auto srcBuffer = new Buffer(mContext, CL_MEM_ALLOC_HOST_PTR, srcData, size);
+    assert(srcBuffer);
+
+    commandEncoder->copyFromBuffer(srcBuffer->GetBuffer(), 0, dstBuffer->GetBuffer(), offset, size);
+    commandEncoder->endEncoding();
+    commandEncoder->release();
+    mCommandBuffer->addCompletedHandler([srcBuffer](MTL::CommandBuffer *commandBuffer) {
+        srcBuffer->Release();
+        delete srcBuffer;
+    });
+}
+
+void CommandQueue::Flush() {
+    mCommandBuffer->commit();
+    mCommittedCommandBuffer.push_back(mCommandBuffer);
+
+    InitCommandBuffer();
+}
+
+void CommandQueue::WaitIdle() {
+    for (auto commandBuffer: mCommittedCommandBuffer) {
+        commandBuffer->waitUntilCompleted();
+        commandBuffer->release();
+    }
+
+    mCommittedCommandBuffer.clear();
 }
 
 Context *CommandQueue::GetContext() const {
@@ -52,6 +107,11 @@ Device *CommandQueue::GetDevice() const {
 void CommandQueue::InitCommandQueue() {
     mCommandQueue = mDevice->GetDevice()->newCommandQueue();
     assert(mCommandQueue);
+}
+
+void CommandQueue::InitCommandBuffer() {
+    mCommandBuffer = mCommandQueue->commandBuffer();
+    assert(mCommandBuffer);
 }
 
 } //namespace cml

@@ -749,7 +749,7 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
         errcode_ret[0] = CL_SUCCESS;
     }
 
-    return new cml::Buffer(cmlContext, size, flags);
+    return new cml::Buffer(cmlContext, flags, size);
 }
 
 #ifdef CL_VERSION_1_1
@@ -1408,7 +1408,9 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
         return CL_INVALID_ARG_INDEX;
     }
 
-    return CL_INVALID_KERNEL;
+    cmlKernel->SetArg(arg_index, arg_value, arg_size);
+
+    return CL_SUCCESS;
 }
 
 #ifdef CL_VERSION_2_0
@@ -1608,11 +1610,28 @@ cl_int clGetEventProfilingInfo(cl_event event, cl_profiling_info param_name, siz
 ***********************************************************************************************************************/
 
 cl_int clFlush(cl_command_queue command_queue) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    cmlCommandQueue->Flush();
+
+    return CL_SUCCESS;
 }
 
 cl_int clFinish(cl_command_queue command_queue) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    cmlCommandQueue->Flush();
+    cmlCommandQueue->WaitIdle();
+
+    return CL_SUCCESS;
 }
 
 /***********************************************************************************************************************
@@ -1622,7 +1641,30 @@ cl_int clFinish(cl_command_queue command_queue) {
 cl_int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read, size_t offset,
                            size_t size, void *ptr, cl_uint num_events_in_wait_list, const cl_event *event_wait_list,
                            cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    if (!ptr) {
+        return CL_INVALID_VALUE;
+    }
+
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    auto cmlBuffer = cml::Buffer::DownCast(buffer);
+
+    if (!cmlBuffer) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    cmlCommandQueue->EnqueueReadBuffer(cmlBuffer, ptr, offset, size);
+
+    if (blocking_read) {
+        cmlCommandQueue->Flush();
+        cmlCommandQueue->WaitIdle();
+    }
+
+    return CL_SUCCESS;
 }
 
 #ifdef CL_VERSION_1_1
@@ -1640,7 +1682,30 @@ cl_int clEnqueueReadBufferRect(cl_command_queue command_queue, cl_mem buffer, cl
 cl_int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset,
                             size_t size, const void *ptr, cl_uint num_events_in_wait_list,
                             const cl_event *event_wait_list, cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    if (!ptr) {
+        return CL_INVALID_VALUE;
+    }
+
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    auto cmlBuffer = cml::Buffer::DownCast(buffer);
+
+    if (!cmlBuffer) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    cmlCommandQueue->EnqueueWriteBuffer(ptr, cmlBuffer, offset, size);
+
+    if (blocking_write) {
+        cmlCommandQueue->Flush();
+        cmlCommandQueue->WaitIdle();
+    }
+
+    return CL_SUCCESS;
 }
 
 #ifdef CL_VERSION_1_1
