@@ -60,6 +60,7 @@ target_link_libraries(clmtl
         khronos
         apple
         clspv
+        json
 )
 
 add_subdirectory(demo)

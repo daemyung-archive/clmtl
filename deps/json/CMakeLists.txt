@@ -14,7 +14,14 @@
 # limitations under the License.
 ########################################################################################################################
 
-add_subdirectory(khronos)
-add_subdirectory(apple)
-add_subdirectory(clspv)
-add_subdirectory(json)
+cmake_minimum_required(VERSION 3.18)
+project(json CXX)
+
+add_library(json INTERFACE
+        include/json/json.hpp
+)
+
+target_include_directories(json
+    INTERFACE
+        include
+)
