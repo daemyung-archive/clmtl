@@ -1820,7 +1820,30 @@ cl_int clEnqueueNDRangeKernel(cl_command_queue command_queue, cl_kernel kernel, 
                               const size_t *global_work_offset, const size_t *global_work_size,
                               const size_t *local_work_size, cl_uint num_events_in_wait_list,
                               const cl_event *event_wait_list, cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    if (work_dim > 3) {
+        return CL_INVALID_WORK_DIMENSION;
+    }
+
+    if (global_work_offset) {
+        return CL_INVALID_GLOBAL_OFFSET;
+    }
+
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    auto cmlKernel = cml::Kernel::DownCast(kernel);
+
+    if (!cmlKernel) {
+        return CL_INVALID_KERNEL;
+    }
+
+    cmlCommandQueue->EnqueueDispatch(cmlKernel, cml::Util::ConvertToSize(work_dim, global_work_size),
+                                     cml::Util::ConvertToSize(work_dim, local_work_size));
+
+    return CL_SUCCESS;
 }
 
 cl_int clEnqueueNativeKernel(cl_command_queue command_queue, void (*user_func)(void *), void *args, size_t cb_args,

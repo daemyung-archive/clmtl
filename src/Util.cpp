@@ -31,4 +31,8 @@ intptr_t Util::ReadProperty(const cl_context_properties *properties, uint64_t ke
     return 0;
 }
 
+std::array<size_t, 3> Util::ConvertToSize(cl_uint dim, const size_t *size) {
+    return {size[0], dim > 1 ? size[1] : 1, dim > 3 ? size[2] : 1};
+}
+
 } //namespace cml

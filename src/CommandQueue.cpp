@@ -29,6 +29,25 @@ _cl_command_queue::_cl_command_queue(cl_icd_dispatch *dispatch) :
 
 namespace cml {
 
+MTL::Size ConvertToSize(const std::array<size_t, 3> &size) {
+    return {size[0], size[1], size[2]};
+}
+
+void BindResources(MTL::ComputeCommandEncoder *commandEncoder, Kernel *kernel) {
+    for (auto &[index, arg]: kernel->GetArgTable()) {
+        switch (arg.Kind) {
+            case clspv::ArgKind::Buffer:
+                commandEncoder->setBuffer(arg.Buffer->GetBuffer(), 0, index);
+                break;
+            case clspv::ArgKind::Pod:
+                commandEncoder->setBytes(arg.Data, arg.Size, index);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 CommandQueue *CommandQueue::DownCast(cl_command_queue commandQueue) {
     return dynamic_cast<CommandQueue *>(commandQueue);
 }
@@ -78,6 +97,18 @@ void CommandQueue::EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, si
         srcBuffer->Release();
         delete srcBuffer;
     });
+}
+
+void CommandQueue::EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize,
+                                   const std::array<size_t, 3> &localWorkSize) {
+    auto commandEncoder = mCommandBuffer->computeCommandEncoder();
+    assert(commandEncoder);
+
+    BindResources(commandEncoder, kernel);
+    commandEncoder->setComputePipelineState(kernel->GetPipeline());
+    commandEncoder->dispatchThreads(ConvertToSize(globalWorkSize), ConvertToSize(localWorkSize));
+    commandEncoder->endEncoding();
+    commandEncoder->release();
 }
 
 void CommandQueue::Flush() {

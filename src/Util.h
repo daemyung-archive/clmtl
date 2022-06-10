@@ -27,6 +27,7 @@ class Util {
 public:
     static bool TestAnyFlagSet(uint64_t bitset, uint64_t test);
     static intptr_t ReadProperty(const cl_context_properties *properties, uint64_t key);
+    static std::array<size_t, 3> ConvertToSize(cl_uint dim, const size_t *size);
 };
 
 } //namespace cml
