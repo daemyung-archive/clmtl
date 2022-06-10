@@ -18,11 +18,11 @@
 #define CLMTL_KERNEL_H
 
 #include <string>
-#include <vector>
 #include <CL/cl_icd.h>
 #include <Metal/Metal.hpp>
 
 #include "Object.h"
+#include "Reflector.h"
 
 class _cl_kernel {
 public:
@@ -36,9 +36,15 @@ namespace cml {
 
 class Context;
 class Program;
+class Buffer;
 
-struct Argument {
-    MTL::ArgumentType Type;
+struct Arg {
+    clspv::ArgKind Kind;
+    union {
+        Buffer *Buffer;
+        uint8_t Data[64];
+    };
+    size_t Size;
 };
 
 class Kernel : public _cl_kernel, public Object {
@@ -48,22 +54,26 @@ public:
 public:
     explicit Kernel(Program *program, std::string name);
     ~Kernel() override;
+    void SetArg(size_t index, const void *value, size_t size);
     Context *GetContext() const;
     Program *GetProgram() const;
     std::string GetName() const;
-    std::vector<Argument> GetArgumentTable() const;
+    MTL::ComputePipelineState *GetPipeline() const;
     size_t GetWorkGroupSize() const;
     size_t GetWorkItemExecutionWidth() const;
+    std::unordered_map<uint32_t, Arg> GetArgTable() const;
 
 private:
     Program *mProgram;
     std::string mName;
     MTL::Function *mFunction;
     MTL::ComputePipelineState *mPipeline;
-    std::vector<Argument> mArgumentTable;
+    Reflector mReflector;
+    std::unordered_map<uint32_t, Arg> mArgTable;
 
     void InitFunction();
     void InitPipeline();
+    void InitArgTable();
 };
 
 } //namespace cml

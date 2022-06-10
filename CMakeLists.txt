@@ -41,6 +41,8 @@ add_library(clmtl
         src/Buffer.cpp
         src/Program.h
         src/Program.cpp
+        src/Reflector.h
+        src/Reflector.cpp
         src/Kernel.h
         src/Kernel.cpp
 )

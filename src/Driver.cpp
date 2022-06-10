@@ -1402,9 +1402,9 @@ cl_int clSetKernelArg(cl_kernel kernel, cl_uint arg_index, size_t arg_size, cons
         return CL_INVALID_KERNEL;
     }
 
-    auto cmlArgumentTable = cmlKernel->GetArgumentTable();
+    auto cmlArgTable = cmlKernel->GetArgTable();
 
-    if (arg_index >= cmlArgumentTable.size()) {
+    if (arg_index >= cmlArgTable.size()) {
         return CL_INVALID_ARG_INDEX;
     }
 

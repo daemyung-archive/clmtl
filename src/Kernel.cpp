@@ -18,7 +18,6 @@
 
 #include <cassert>
 #include <Foundation/NSString.hpp>
-#include <spirv_cross/spirv_reflect.hpp>
 
 #include "Dispatch.h"
 #include "Device.h"
@@ -38,13 +37,19 @@ Kernel *Kernel::DownCast(cl_kernel kernel) {
 
 Kernel::Kernel(Program *program, std::string name) :
         _cl_kernel{Dispatch::GetTable()}, Object{}, mProgram{program}, mName{std::move(name)},
-        mFunction{nullptr}, mPipeline{nullptr} {
+        mFunction{nullptr}, mPipeline{nullptr}, mReflector{program->GetBinary()}, mArgTable{} {
     InitFunction();
     InitPipeline();
+    InitArgTable();
 }
 
 Kernel::~Kernel() {
     mPipeline->release();
+}
+
+void Kernel::SetArg(size_t index, const void *data, size_t size) {
+    memcpy(mArgTable[index].Data, data, size);
+    mArgTable[index].Size = size;
 }
 
 Context *Kernel::GetContext() const {
@@ -59,8 +64,8 @@ std::string Kernel::GetName() const {
     return mName;
 }
 
-std::vector<Argument> Kernel::GetArgumentTable() const {
-    return mArgumentTable;
+MTL::ComputePipelineState *Kernel::GetPipeline() const {
+    return mPipeline;
 }
 
 size_t Kernel::GetWorkGroupSize() const {
@@ -69,6 +74,10 @@ size_t Kernel::GetWorkGroupSize() const {
 
 size_t Kernel::GetWorkItemExecutionWidth() const {
     return mPipeline->threadExecutionWidth();
+}
+
+std::unordered_map<uint32_t, Arg> Kernel::GetArgTable() const {
+    return mArgTable;
 }
 
 void Kernel::InitFunction() {
@@ -80,29 +89,20 @@ void Kernel::InitFunction() {
     name->release();
 }
 
-
 void Kernel::InitPipeline() {
-    MTL::ComputePipelineReflection *reflection;
     NS::Error *error = nullptr;
 
-    mPipeline = Device::GetSingleton()->GetDevice()->newComputePipelineState(mFunction, MTL::PipelineOptionArgumentInfo,
-                                                                             &reflection, &error);
+    mPipeline = Device::GetSingleton()->GetDevice()->newComputePipelineState(mFunction, &error);
     assert(mPipeline);
 
-    if (!error) {
-        auto arguments = reflection->arguments();
-        assert(arguments);
-
-        for (auto i = 0; i != arguments->count(); ++i) {
-            auto argument = (MTL::Argument *) arguments->object(i);
-            assert(argument);
-
-            mArgumentTable.push_back({argument->type()});
-        }
-
-        reflection->release();
-    } else {
+    if (error) {
         error->release();
+    }
+}
+
+void Kernel::InitArgTable() {
+    for (auto &[index, binding] : mReflector.GetBindingTable()) {
+        mArgTable[index].Kind = binding.Kind;
     }
 }
 

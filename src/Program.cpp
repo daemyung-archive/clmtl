@@ -28,13 +28,15 @@ _cl_program::_cl_program(cl_icd_dispatch *dispatch) :
 
 namespace cml {
 
+constexpr auto DefaultOptions = "--cluster-pod-kernel-args=0";
+
 Program *Program::DownCast(cl_program program) {
     return dynamic_cast<Program *>(program);
 }
 
 Program::Program(Context *context) :
-        _cl_program{Dispatch::GetTable()}, Object{}, mContext{context}, mSources{}, mOptions{}, mBinary{},
-        mLog{}, mBuildStatus{CL_BUILD_NONE} {
+        _cl_program{Dispatch::GetTable()}, Object{}, mContext{context}, mSources{},
+        mOptions{DefaultOptions}, mBinary{}, mLog{}, mBuildStatus{CL_BUILD_NONE} {
 }
 
 void Program::AddSource(const std::string &source) {
@@ -71,7 +73,7 @@ void Program::Link(const std::vector<std::vector<uint32_t>> &binaries) {
 }
 
 void Program::SetOptions(const std::string &options) {
-    mOptions = options;
+    mOptions = options + " " + DefaultOptions;
 }
 
 void Program::SetBinary(const std::vector<uint32_t> &binary) {
