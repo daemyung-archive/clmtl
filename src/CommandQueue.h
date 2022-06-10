@@ -24,13 +24,17 @@
 
 #include "Object.h"
 
-class _cl_command_queue {
-public:
-    cl_icd_dispatch *Dispatch;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    explicit _cl_command_queue(cl_icd_dispatch *dispatch);
-    virtual ~_cl_command_queue() = default;
+struct _cl_command_queue {
+    cl_icd_dispatch *Dispatch;
 };
+
+#ifdef __cplusplus
+} //extern "C"
+#endif
 
 namespace cml {
 

@@ -19,15 +19,10 @@
 #include "Dispatch.h"
 #include "Device.h"
 
-_cl_context::_cl_context(cl_icd_dispatch *dispatch) :
-        Dispatch{dispatch} {
-    assert(Dispatch);
-}
-
 namespace cml {
 
 Context *Context::DownCast(cl_context context) {
-    return dynamic_cast<Context *>(context);
+    return (Context *) context;
 }
 
 Context::Context()

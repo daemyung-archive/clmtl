@@ -22,11 +22,6 @@
 #include "Buffer.h"
 #include "Kernel.h"
 
-_cl_command_queue::_cl_command_queue(cl_icd_dispatch *dispatch) :
-        Dispatch{dispatch} {
-    assert(Dispatch);
-}
-
 namespace cml {
 
 MTL::Size ConvertToSize(const std::array<size_t, 3> &size) {
@@ -37,7 +32,7 @@ void BindResources(MTL::ComputeCommandEncoder *commandEncoder, Kernel *kernel) {
     for (auto &[index, arg]: kernel->GetArgTable()) {
         switch (arg.Kind) {
             case clspv::ArgKind::Buffer:
-                commandEncoder->setBuffer(arg.Buffer->GetBuffer(), 0, index);
+                commandEncoder->setBuffer(Buffer::DownCast(arg.Buffer)->GetBuffer(), 0, index);
                 break;
             case clspv::ArgKind::Pod:
                 commandEncoder->setBytes(arg.Data, arg.Size, index);
@@ -49,7 +44,7 @@ void BindResources(MTL::ComputeCommandEncoder *commandEncoder, Kernel *kernel) {
 }
 
 CommandQueue *CommandQueue::DownCast(cl_command_queue commandQueue) {
-    return dynamic_cast<CommandQueue *>(commandQueue);
+    return (CommandQueue *) commandQueue;
 }
 
 CommandQueue::CommandQueue(Context *context, Device *device) :

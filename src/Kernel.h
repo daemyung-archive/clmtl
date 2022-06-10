@@ -24,13 +24,17 @@
 #include "Object.h"
 #include "Reflector.h"
 
-class _cl_kernel {
-public:
-    cl_icd_dispatch *Dispatch;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    explicit _cl_kernel(cl_icd_dispatch *dispatch);
-    virtual ~_cl_kernel() = default;
+struct _cl_kernel {
+    cl_icd_dispatch *Dispatch;
 };
+
+#ifdef __cplusplus
+} //extern "C"
+#endif
 
 namespace cml {
 
@@ -41,7 +45,7 @@ class Buffer;
 struct Arg {
     clspv::ArgKind Kind;
     union {
-        Buffer *Buffer;
+        cl_mem Buffer;
         uint8_t Data[64];
     };
     size_t Size;

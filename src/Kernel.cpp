@@ -24,15 +24,10 @@
 #include "Program.h"
 #include "LibraryPool.h"
 
-_cl_kernel::_cl_kernel(cl_icd_dispatch *dispatch) :
-        Dispatch{dispatch} {
-    assert(Dispatch);
-}
-
 namespace cml {
 
 Kernel *Kernel::DownCast(cl_kernel kernel) {
-    return dynamic_cast<Kernel *>(kernel);
+    return (Kernel *) kernel;
 }
 
 Kernel::Kernel(Program *program, std::string name) :

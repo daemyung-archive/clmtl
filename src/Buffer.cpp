@@ -21,11 +21,6 @@
 #include "Context.h"
 #include "Device.h"
 
-_cl_mem::_cl_mem(cl_icd_dispatch *dispatch) :
-        Dispatch{dispatch} {
-    assert(Dispatch);
-}
-
 namespace cml {
 
 MTL::ResourceOptions convertToResourceOptions(cl_mem_flags flags) {
@@ -44,7 +39,7 @@ MTL::ResourceOptions convertToResourceOptions(cl_mem_flags flags) {
 }
 
 Buffer *Buffer::DownCast(cl_mem buffer) {
-    return dynamic_cast<Buffer *>(buffer);
+    return (Buffer *) buffer;
 }
 
 Buffer::Buffer(Context *context, cl_mem_flags flags, size_t size) :

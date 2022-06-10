@@ -21,17 +21,12 @@
 
 #include "Dispatch.h"
 
-_cl_program::_cl_program(cl_icd_dispatch *dispatch) :
-        Dispatch{dispatch} {
-    assert(Dispatch);
-}
-
 namespace cml {
 
 constexpr auto DefaultOptions = "--cluster-pod-kernel-args=0";
 
 Program *Program::DownCast(cl_program program) {
-    return dynamic_cast<Program *>(program);
+    return (Program *) program;
 }
 
 Program::Program(Context *context) :

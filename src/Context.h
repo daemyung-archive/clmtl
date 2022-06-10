@@ -21,13 +21,17 @@
 
 #include "Object.h"
 
-class _cl_context {
-public:
-    cl_icd_dispatch *Dispatch;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    explicit _cl_context(cl_icd_dispatch *dispatch);
-    virtual ~_cl_context() = default;
+struct _cl_context {
+    cl_icd_dispatch *Dispatch;
 };
+
+#ifdef __cplusplus
+} //extern "C"
+#endif
 
 namespace cml {
 

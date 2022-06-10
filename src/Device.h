@@ -21,13 +21,17 @@
 #include <CL/cl_icd.h>
 #include <Metal/Metal.hpp>
 
-class _cl_device_id {
-public:
-    cl_icd_dispatch *Dispatch;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    explicit _cl_device_id(cl_icd_dispatch *dispatch);
-    virtual ~_cl_device_id() = default;
+struct _cl_device_id {
+    cl_icd_dispatch *Dispatch;
 };
+
+#ifdef __cplusplus
+} //extern "C"
+#endif
 
 namespace cml {
 
@@ -104,7 +108,7 @@ public:
     static Device *DownCast(_cl_device_id *device);
 
 public:
-    ~Device() override;
+    ~Device();
     MTL::Device *GetDevice() const;
     DeviceLimits GetLimits() const;
     LibraryPool *GetLibraryPool() const;

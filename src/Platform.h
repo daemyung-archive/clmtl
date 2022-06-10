@@ -20,13 +20,17 @@
 #include <string>
 #include <CL/cl_icd.h>
 
-class _cl_platform_id {
-public:
-    cl_icd_dispatch *Dispatch;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    explicit _cl_platform_id(cl_icd_dispatch *dispatch);
-    virtual ~_cl_platform_id() = default;
+struct _cl_platform_id {
+    cl_icd_dispatch *Dispatch;
 };
+
+#ifdef __cplusplus
+} //extern "C"
+#endif
 
 namespace cml {
 

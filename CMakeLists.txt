@@ -15,7 +15,7 @@
 ########################################################################################################################
 
 cmake_minimum_required(VERSION 3.18)
-project(clmtl CXX)
+project(clmtl C CXX)
 
 add_subdirectory(deps)
 

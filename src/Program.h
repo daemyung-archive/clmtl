@@ -23,13 +23,17 @@
 
 #include "Object.h"
 
-class _cl_program {
-public:
-    cl_icd_dispatch *Dispatch;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    explicit _cl_program(cl_icd_dispatch *dispatch);
-    virtual ~_cl_program() = default;
+struct _cl_program {
+    cl_icd_dispatch *Dispatch;
 };
+
+#ifdef __cplusplus
+} //extern "C"
+#endif
 
 namespace cml {
 

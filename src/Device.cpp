@@ -20,11 +20,6 @@
 #include "Platform.h"
 #include "LibraryPool.h"
 
-_cl_device_id::_cl_device_id(cl_icd_dispatch *dispatch) :
-        Dispatch{dispatch} {
-    assert(Dispatch);
-}
-
 namespace cml {
 
 Device *Device::GetSingleton() {
@@ -33,7 +28,7 @@ Device *Device::GetSingleton() {
 }
 
 Device *Device::DownCast(_cl_device_id *device) {
-    return dynamic_cast<Device *>(device);
+    return (Device *) device;
 }
 
 Device::~Device() {

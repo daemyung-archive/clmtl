@@ -22,13 +22,17 @@
 
 #include "Object.h"
 
-class _cl_mem {
-public:
-    cl_icd_dispatch *Dispatch;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    explicit _cl_mem(cl_icd_dispatch *dispatch);
-    virtual ~_cl_mem() = default;
+struct _cl_mem {
+    cl_icd_dispatch *Dispatch;
 };
+
+#ifdef __cplusplus
+} //extern "C"
+#endif
 
 namespace cml {
 

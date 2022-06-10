@@ -18,11 +18,6 @@
 
 #include "Dispatch.h"
 
-_cl_platform_id::_cl_platform_id(cl_icd_dispatch *dispatch) :
-        Dispatch{dispatch} {
-    assert(Dispatch);
-}
-
 namespace cml {
 
 Platform *Platform::GetSingleton() {
@@ -31,7 +26,7 @@ Platform *Platform::GetSingleton() {
 }
 
 Platform *Platform::DownCast(_cl_platform_id *platform) {
-    return dynamic_cast<Platform *>(platform);
+    return (Platform *) platform;
 }
 
 std::string Platform::GetProfile() {
