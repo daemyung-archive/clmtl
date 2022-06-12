@@ -25,6 +25,7 @@
 #include "Buffer.h"
 #include "Program.h"
 #include "Kernel.h"
+#include "Sampler.h"
 
 /***********************************************************************************************************************
 * OpenCL Core APIs
@@ -938,16 +939,82 @@ cl_sampler clCreateSamplerWithProperties(cl_context context, const cl_sampler_pr
 #endif
 
 cl_int clRetainSampler(cl_sampler sampler) {
-    return CL_INVALID_SAMPLER;
+    auto cmlSampler = cml::Sampler::DownCast(sampler);
+
+    if (!cmlSampler) {
+        return CL_INVALID_SAMPLER;
+    }
+
+    cmlSampler->Retain();
+
+    return CL_SUCCESS;
 }
 
 cl_int clReleaseSampler(cl_sampler sampler) {
-    return CL_INVALID_SAMPLER;
+    auto cmlSampler = cml::Sampler::DownCast(sampler);
+
+    if (!cmlSampler) {
+        return CL_INVALID_SAMPLER;
+    }
+
+    cmlSampler->Release();
+
+    if (!cmlSampler->GetReferenceCount()) {
+        delete cmlSampler;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clGetSamplerInfo(cl_sampler sampler, cl_sampler_info param_name, size_t param_value_size, void *param_value,
                         size_t *param_value_size_ret) {
-    return CL_INVALID_SAMPLER;
+    auto cmlSampler = cml::Sampler::DownCast(sampler);
+
+    if (!cmlSampler) {
+        return CL_INVALID_SAMPLER;
+    }
+
+    size_t size;
+    uint8_t info[2048];
+
+    switch (param_name) {
+        case CL_SAMPLER_REFERENCE_COUNT:
+            size = sizeof(cl_uint);
+            *((cl_uint *) info) = cmlSampler->GetReferenceCount();
+            break;
+        case CL_SAMPLER_CONTEXT:
+            size = sizeof(cl_context);
+            *((cl_context *) info) = cmlSampler->GetContext();
+            break;
+        case CL_SAMPLER_NORMALIZED_COORDS:
+            size = sizeof(cl_bool);
+            *((cl_bool *) info) = cmlSampler->GetNormalizedCoords();
+            break;
+        case CL_SAMPLER_ADDRESSING_MODE:
+            size = sizeof(cl_addressing_mode);
+            *((cl_addressing_mode *) info) = cmlSampler->GetAddressingMode();
+            break;
+        case CL_SAMPLER_FILTER_MODE:
+            size = sizeof(cl_filter_mode);
+            *((cl_filter_mode *) info) = cmlSampler->GetFilterMode();
+            break;
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size < size) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info, size);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = size;
+    }
+
+    return CL_SUCCESS;
 }
 
 /***********************************************************************************************************************
@@ -2005,7 +2072,19 @@ cl_command_queue clCreateCommandQueue(cl_context context, cl_device_id device, c
 
 cl_sampler clCreateSampler(cl_context context, cl_bool normalized_coords, cl_addressing_mode addressing_mode,
                            cl_filter_mode filter_mode, cl_int *errcode_ret) {
-    return nullptr;
+    auto cmlContext = cml::Context::DownCast(context);
+
+    if (!cmlContext) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_CONTEXT;
+        }
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return new cml::Sampler(cmlContext, normalized_coords, addressing_mode, filter_mode);
 }
 
 cl_int clEnqueueTask(cl_command_queue command_queue, cl_kernel kernel, cl_uint num_events_in_wait_list,

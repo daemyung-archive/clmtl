@@ -45,6 +45,8 @@ add_library(clmtl
         src/Reflector.cpp
         src/Kernel.h
         src/Kernel.cpp
+        src/Sampler.h
+        src/Sampler.cpp
 )
 
 target_compile_features(clmtl
