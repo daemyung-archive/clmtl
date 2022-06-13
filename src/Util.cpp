@@ -31,6 +31,27 @@ intptr_t Util::ReadProperty(const cl_context_properties *properties, uint64_t ke
     return 0;
 }
 
+size_t Util::GetChannelSize(cl_channel_order order) {
+    switch (order) {
+        case CL_R:
+        case CL_A:
+        case CL_INTENSITY:
+        case CL_LUMINANCE:
+            return 1;
+        case CL_RG:
+        case CL_RA:
+            return 2;
+        case CL_RGB:
+            return 3;
+        case CL_RGBA:
+        case CL_BGRA:
+        case CL_ARGB:
+            return 4;
+        default:
+            return 0;
+    }
+}
+
 std::array<size_t, 3> Util::ConvertToSize(cl_uint dim, const size_t *size) {
     return {size[0], dim > 1 ? size[1] : 1, dim > 3 ? size[2] : 1};
 }

@@ -23,6 +23,7 @@
 #include "Context.h"
 #include "CommandQueue.h"
 #include "Buffer.h"
+#include "Image.h"
 #include "Program.h"
 #include "Kernel.h"
 #include "Sampler.h"
@@ -889,7 +890,61 @@ cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_va
 
 cl_int clGetImageInfo(cl_mem image, cl_image_info param_name, size_t param_value_size, void *param_value,
                       size_t *param_value_size_ret) {
-    return CL_INVALID_MEM_OBJECT;
+    auto cmlImage = cml::Image::DownCast(image);
+
+    if (!cmlImage) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    size_t size;
+    uint8_t info[2048];
+
+    switch (param_name) {
+        case CL_IMAGE_FORMAT:
+            size = sizeof(cl_image_format);
+            *((cl_image_format *) info) = cmlImage->GetFormat();
+            break;
+        case CL_IMAGE_ELEMENT_SIZE:
+            size = sizeof(size_t);
+            *((size_t *) info) = cml::Util::GetChannelSize(cmlImage->GetFormat().image_channel_order);
+            break;
+        case CL_IMAGE_ROW_PITCH:
+            size = sizeof(size_t);
+            *((size_t *) info) = 0;
+            break;
+        case CL_IMAGE_SLICE_PITCH:
+            size = sizeof(size_t);
+            *((size_t *) info) = 0;
+            break;
+        case CL_IMAGE_WIDTH:
+            size = sizeof(size_t);
+            *((size_t *) info) = cmlImage->GetWidth();
+            break;
+        case CL_IMAGE_HEIGHT:
+            size = sizeof(size_t);
+            *((size_t *) info) = cmlImage->GetHeight();
+            break;
+        case CL_IMAGE_DEPTH:
+            size = sizeof(size_t);
+            *((size_t *) info) = cmlImage->GetDepth();
+            break;
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size < size) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info, size);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = size;
+    }
+
+    return CL_SUCCESS;
 }
 
 #ifdef CL_VERSION_2_0
@@ -2000,13 +2055,106 @@ cl_int clSetCommandQueueProperty(cl_command_queue command_queue, cl_command_queu
 
 cl_mem clCreateImage2D(cl_context context, cl_mem_flags flags, const cl_image_format *image_format, size_t image_width,
                        size_t image_height, size_t image_row_pitch, void *host_ptr, cl_int *errcode_ret) {
-    return nullptr;
+    if (!image_format) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_IMAGE_FORMAT_DESCRIPTOR;
+        }
+
+        return nullptr;
+    }
+
+    if (host_ptr && !cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR)) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_HOST_PTR;
+        }
+
+        return nullptr;
+    }
+
+    if (cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR) && !host_ptr) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_HOST_PTR;
+        }
+
+        return nullptr;
+    }
+
+    if (cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR)) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        }
+
+        return nullptr;
+    }
+
+    auto cmlContext = cml::Context::DownCast(context);
+
+    if (!cmlContext) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_CONTEXT;
+        }
+
+        return nullptr;
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return new cml::Image(cmlContext, flags, *image_format, CL_MEM_OBJECT_IMAGE2D, image_width, image_height, 1);
 }
 
 cl_mem clCreateImage3D(cl_context context, cl_mem_flags flags, const cl_image_format *image_format, size_t image_width,
                        size_t image_height, size_t image_depth, size_t image_row_pitch, size_t image_slice_pitch,
                        void *host_ptr, cl_int *errcode_ret) {
-    return nullptr;
+    if (!image_format) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_IMAGE_FORMAT_DESCRIPTOR;
+        }
+
+        return nullptr;
+    }
+
+    if (host_ptr && !cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR)) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_HOST_PTR;
+        }
+
+        return nullptr;
+    }
+
+    if (cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR) && !host_ptr) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_HOST_PTR;
+        }
+
+        return nullptr;
+    }
+
+    if (cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR)) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        }
+
+        return nullptr;
+    }
+
+    auto cmlContext = cml::Context::DownCast(context);
+
+    if (!cmlContext) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_CONTEXT;
+        }
+
+        return nullptr;
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return new cml::Image(cmlContext, flags, *image_format, CL_MEM_OBJECT_IMAGE3D, image_width, image_height,
+                          image_height);
 }
 
 cl_int clEnqueueMarker(cl_command_queue command_queue, cl_event *event) {
