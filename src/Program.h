@@ -46,7 +46,7 @@ public:
 public:
     explicit Program(Context *context);
     void AddSource(const std::string &source);
-    std::vector<std::vector<uint32_t>> Compile();
+    void Compile();
     void Link(const std::vector<std::vector<uint32_t>> &binaries);
     void SetOptions(const std::string &options);
     void SetBinary(const std::vector<uint32_t> &binary);
@@ -59,7 +59,7 @@ public:
 
 private:
     Context *mContext;
-    std::vector<std::string> mSources;
+    std::string mSource;
     std::string mOptions;
     std::vector<uint32_t> mBinary;
     cl_build_status mBuildStatus;

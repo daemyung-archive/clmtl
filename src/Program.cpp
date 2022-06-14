@@ -30,31 +30,20 @@ Program *Program::DownCast(cl_program program) {
 }
 
 Program::Program(Context *context) :
-        _cl_program{Dispatch::GetTable()}, Object{}, mContext{context}, mSources{},
-        mOptions{DefaultOptions}, mBinary{}, mLog{}, mBuildStatus{CL_BUILD_NONE} {
+    _cl_program{Dispatch::GetTable()}, Object{}, mContext{context}, mSource{}, mOptions{DefaultOptions},
+    mBinary{}, mLog{}, mBuildStatus{CL_BUILD_NONE} {
 }
 
 void Program::AddSource(const std::string &source) {
-    mSources.push_back(source);
+    mSource += source;
 }
 
-std::vector<std::vector<uint32_t>> Program::Compile() {
-    std::vector<std::vector<uint32_t>> binaries;
-
-    mBuildStatus = CL_BUILD_SUCCESS;
-    for (auto &source : mSources) {
-        std::vector<uint32_t> binary;
-
-        if (!clspv::CompileFromSourceString(source, "", mOptions, &binary, &mLog)) {
-            binaries.push_back(binary);
-        } else {
-            mBuildStatus = CL_BUILD_ERROR;
-
-            return binaries;
-        }
+void Program::Compile() {
+    if (!clspv::CompileFromSourceString(mSource, "", mOptions, &mBinary, &mLog)) {
+        mBuildStatus = CL_BUILD_SUCCESS;
+    } else {
+        mBuildStatus = CL_BUILD_ERROR;
     }
-
-    return binaries;
 }
 
 void Program::Link(const std::vector<std::vector<uint32_t>> &binaries) {
@@ -80,7 +69,7 @@ Context *Program::GetContext() const {
 }
 
 std::string Program::GetSource() const {
-    return mSources[0];
+    return mSource;
 }
 
 std::string Program::GetOptions() const {

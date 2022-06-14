@@ -1084,12 +1084,15 @@ cl_program clCreateProgramWithSource(cl_context context, cl_uint count, const ch
         return nullptr;
     }
 
-
     auto cmlProgram = new cml::Program(cmlContext);
     assert(cmlProgram);
 
     for (auto i = 0; i != count; ++i) {
-        cmlProgram->AddSource(lengths ? std::string(strings[i], lengths[i]) : strings[i]);
+        if (lengths && lengths[i]) {
+            cmlProgram->AddSource({strings[i], lengths[i]});
+        } else {
+            cmlProgram->AddSource(strings[i]);
+        }
     }
 
     if (errcode_ret) {
@@ -1255,13 +1258,7 @@ cl_int clBuildProgram(cl_program program, cl_uint num_devices, const cl_device_i
         cmlProgram->SetOptions(options);
     }
 
-    auto binaries = cmlProgram->Compile();
-
-    if (cmlProgram->GetBuildStatus() != CL_BUILD_SUCCESS) {
-        return CL_BUILD_PROGRAM_FAILURE;
-    }
-
-    cmlProgram->Link(binaries);
+    cmlProgram->Compile();
 
     if (cmlProgram->GetBuildStatus() != CL_BUILD_SUCCESS) {
         return CL_BUILD_PROGRAM_FAILURE;
