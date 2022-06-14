@@ -23,8 +23,55 @@
 
 namespace cml {
 
+void KeepResourceBindings(spirv_cross::CompilerMSL &compiler) {
+    const auto resources = compiler.get_shader_resources();
+    const auto stage = compiler.get_execution_model();
+
+    for (const auto &resource : resources.uniform_buffers) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+    
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                           .msl_texture = binding, .msl_sampler = binding});
+    }
+
+    for (const auto &resource : resources.storage_buffers) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+    
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                              .msl_texture = binding, .msl_sampler = binding});
+    }
+
+    for (const auto &resource : resources.storage_images) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+    
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                              .msl_texture = binding, .msl_sampler = binding});
+    }
+
+    for (auto &resource : resources.sampled_images) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+    
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                              .msl_texture = binding, .msl_sampler = binding});
+    }
+
+    for (auto &resource : resources.separate_images) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+    
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                              .msl_texture = binding, .msl_sampler = binding});
+    }
+
+    for (const auto &resource  : resources.separate_samplers) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+    
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                              .msl_texture = binding, .msl_sampler = binding});
+    }
+}
+
 LibraryPool::LibraryPool(Device *device) :
-        mDevice{device}, mLibraries{}, mMslOptions{} {
+    mDevice{device}, mLibraries{}, mMslOptions{} {
     InitMslOptions();
 }
 
@@ -50,6 +97,7 @@ void LibraryPool::AddLibrary(Program *program) {
     auto compiler = spirv_cross::CompilerMSL(program->GetBinary());
 
     compiler.set_msl_options(mMslOptions);
+    KeepResourceBindings(compiler);
 
     auto shader = compiler.compile();
     auto source = NS::String::alloc()->init(shader.c_str(), NS::UTF8StringEncoding);
