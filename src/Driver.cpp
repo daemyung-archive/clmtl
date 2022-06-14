@@ -1326,8 +1326,8 @@ cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t p
             *((cl_uint *) info) = 1;
             break;
         case CL_PROGRAM_DEVICES:
-            size = sizeof(cl_properties);
-            *((cl_properties *) info) = 0;
+            size = sizeof(cl_device_id);
+            *((cl_device_id *) info) = cmlProgram->GetContext()->GetDevice();
             break;
         case CL_PROGRAM_SOURCE:
             size = cmlProgram->GetSource().size() + 1;
