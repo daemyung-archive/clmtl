@@ -17,7 +17,6 @@
 #include "LibraryPool.h"
 
 #include <Foundation/Foundation.hpp>
-#include <spirv_cross/spirv_msl.hpp>
 
 #include "Device.h"
 #include "Program.h"
@@ -25,7 +24,8 @@
 namespace cml {
 
 LibraryPool::LibraryPool(Device *device) :
-        mDevice{device}, mLibraries{} {
+        mDevice{device}, mLibraries{}, mMslOptions{} {
+    InitMslOptions();
 }
 
 LibraryPool::~LibraryPool() {
@@ -42,9 +42,17 @@ MTL::Library *LibraryPool::At(Program *program) {
     return mLibraries[program];
 }
 
+void LibraryPool::InitMslOptions() {
+    mMslOptions.set_msl_version(2, 3);
+}
+
 void LibraryPool::AddLibrary(Program *program) {
-    auto source = NS::String::alloc()->init(spirv_cross::CompilerMSL(program->GetBinary()).compile().c_str(),
-                                            NS::UTF8StringEncoding);
+    auto compiler = spirv_cross::CompilerMSL(program->GetBinary());
+
+    compiler.set_msl_options(mMslOptions);
+
+    auto shader = compiler.compile();
+    auto source = NS::String::alloc()->init(shader.c_str(), NS::UTF8StringEncoding);
     NS::Error *error;
 
     mLibraries[program] = mDevice->GetDevice()->newLibrary(source, nullptr, &error);

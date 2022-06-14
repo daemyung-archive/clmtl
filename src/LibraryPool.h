@@ -19,6 +19,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <spirv_cross/spirv_msl.hpp>
 #include <Metal/Metal.hpp>
 
 namespace cml {
@@ -35,7 +36,9 @@ public:
 private:
     Device *mDevice;
     std::unordered_map<Program *, MTL::Library *> mLibraries;
+    spirv_cross::CompilerMSL::Options mMslOptions;
 
+    void InitMslOptions();
     void AddLibrary(Program *program);
 };
 
