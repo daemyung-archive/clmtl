@@ -21,6 +21,11 @@ add_executable(demo
         src/Hello.c
 )
 
+target_compile_definitions(demo
+    PRIVATE
+        CL_TARGET_OPENCL_VERSION=100
+)
+
 target_link_libraries(demo
     PUBLIC
         clmtl

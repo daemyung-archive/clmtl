@@ -57,8 +57,19 @@ target_compile_features(clmtl
 )
 
 target_compile_definitions(clmtl
-    PUBLIC
-        CL_TARGET_OPENCL_VERSION=100
+    PRIVATE
+        CL_TARGET_OPENCL_VERSION=300
+        CL_USE_DEPRECATED_OPENCL_1_0_APIS=1
+        CL_USE_DEPRECATED_OPENCL_1_1_APIS=1
+        CL_USE_DEPRECATED_OPENCL_1_2_APIS=1
+        CL_USE_DEPRECATED_OPENCL_2_0_APIS=1
+        CL_USE_DEPRECATED_OPENCL_2_1_APIS=1
+        CL_USE_DEPRECATED_OPENCL_2_2_APIS=1
+)
+
+target_compile_options(clmtl
+    PRIVATE
+        -Wno-deprecated
 )
 
 target_link_libraries(clmtl

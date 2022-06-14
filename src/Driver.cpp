@@ -320,14 +320,10 @@ cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t pa
             info = &limits.ExecCapabilities;
             size = sizeof(cl_device_exec_capabilities);
             break;
-        case CL_DEVICE_QUEUE_PROPERTIES:
+        case CL_DEVICE_QUEUE_ON_HOST_PROPERTIES:
             info = &limits.QueueOnHostProperties;
             size = sizeof(cl_command_queue_properties);
             break;
-#ifdef CL_VERSION_2_0
-        case CL_DEVICE_QUEUE_ON_HOST_PROPERTIES:
-            break;
-#endif //CL_VERSION_2_0
         case CL_DEVICE_NAME:
             info = limits.Name.data();
             size = limits.Name.size() + 1;
@@ -360,7 +356,6 @@ cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t pa
             info = &limits.DoubleFpConfig;
             size = sizeof(cl_device_fp_config);
             break;
-#ifdef CL_VERSION_1_1
         case CL_DEVICE_PREFERRED_VECTOR_WIDTH_HALF:
             info = &limits.PreferredVectorWidthHalf;
             size = sizeof(cl_uint);
@@ -401,7 +396,6 @@ cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t pa
             info = limits.CVersion.data();
             size = limits.CVersion.size() + 1;
             break;
-#endif //CL_VERSION_1_1
         default:
             return CL_INVALID_VALUE;
     }
@@ -421,8 +415,6 @@ cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t pa
     return CL_SUCCESS;
 }
 
-#ifdef CL_VERSION_1_2
-
 cl_int clCreateSubDevices(cl_device_id in_device, const cl_device_partition_property *properties, cl_uint num_devices,
                           cl_device_id *out_devices, cl_uint *num_devices_ret) {
     return CL_INVALID_DEVICE;
@@ -435,8 +427,6 @@ cl_int clRetainDevice(cl_device_id device) {
 cl_int clReleaseDevice(cl_device_id device) {
     return CL_INVALID_DEVICE;
 }
-
-#endif
 
 #ifdef CL_VERSION_2_1
 
@@ -754,23 +744,15 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
     return new cml::Buffer(cmlContext, flags, size);
 }
 
-#ifdef CL_VERSION_1_1
-
 cl_mem clCreateSubBuffer(cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type,
                          const void *buffer_create_info, cl_int *errcode_ret) {
     return nullptr;
 }
 
-#endif
-
-#ifdef CL_VERSION_1_2
-
 cl_mem clCreateImage(cl_context context, cl_mem_flags flags, const cl_image_format *image_format,
                      const cl_image_desc *image_desc, void *host_ptr, cl_int *errcode_ret) {
     return nullptr;
 }
-
-#endif
 
 #ifdef CL_VERSION_2_0
 
@@ -956,14 +938,10 @@ cl_int clGetPipeInfo(cl_mem pipe, cl_pipe_info param_name, size_t param_value_si
 
 #endif
 
-#ifdef CL_VERSION_1_1
-
 cl_int clSetMemObjectDestructorCallback(cl_mem memobj, void (*pfn_notify)(cl_mem memobj, void *user_data),
                                         void *user_data) {
     return CL_INVALID_MEM_OBJECT;
 }
-
-#endif
 
 /***********************************************************************************************************************
 * SVM Allocation APIs
@@ -1206,14 +1184,10 @@ cl_program clCreateProgramWithBinary(cl_context context, cl_uint num_devices, co
     return cmlProgram;
 }
 
-#ifdef CL_VERSION_1_2
-
 cl_program clCreateProgramWithBuiltInKernels(cl_context context, cl_uint num_devices, const cl_device_id *device_list,
                                              const char *kernel_names, cl_int *errcode_ret) {
     return nullptr;
 }
-
-#endif
 
 #ifdef CL_VERSION_2_1
 
@@ -1296,8 +1270,6 @@ cl_int clBuildProgram(cl_program program, cl_uint num_devices, const cl_device_i
     return CL_SUCCESS;
 }
 
-#ifdef CL_VERSION_1_2
-
 cl_int clCompileProgram(cl_program program, cl_uint num_devices, const cl_device_id *device_list, const char *options,
                         cl_uint num_input_headers, const cl_program *input_headers, const char **header_include_names,
                         void (CL_CALLBACK *pfn_notify)(cl_program program, void *user_data), void *user_data) {
@@ -1310,8 +1282,6 @@ cl_program clLinkProgram(cl_context context, cl_uint num_devices, const cl_devic
                          cl_int *errcode_ret) {
     return nullptr;
 }
-
-#endif
 
 #ifdef CL_VERSION_2_2
 
@@ -1327,13 +1297,9 @@ cl_int clSetProgramSpecializationConstant(cl_program program, cl_uint spec_id, s
 
 #endif
 
-#ifdef CL_VERSION_1_2
-
 cl_int clUnloadPlatformCompiler(cl_platform_id platform) {
     return CL_INVALID_PLATFORM;
 }
-
-#endif
 
 cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t param_value_size, void *param_value,
                         size_t *param_value_size_ret) {
@@ -1599,14 +1565,10 @@ cl_int clGetKernelInfo(cl_kernel kernel, cl_kernel_info param_name, size_t param
     return CL_SUCCESS;
 }
 
-#ifdef CL_VERSION_1_2
-
 cl_int clGetKernelArgInfo(cl_kernel kernel, cl_uint arg_indx, cl_kernel_arg_info param_name, size_t param_value_size,
                           void *param_value, size_t *param_value_size_ret) {
     return CL_INVALID_KERNEL;
 }
-
-#endif
 
 cl_int clGetKernelWorkGroupInfo(cl_kernel kernel, cl_device_id device, cl_kernel_work_group_info param_name,
                                 size_t param_value_size, void *param_value, size_t *param_value_size_ret) {
@@ -1688,13 +1650,9 @@ cl_int clGetEventInfo(cl_event event, cl_event_info param_name, size_t param_val
     return CL_INVALID_EVENT;
 }
 
-#ifdef CL_VERSION_1_1
-
 cl_event clCreateUserEvent(cl_context context, cl_int *errcode_ret) {
     return nullptr;
 }
-
-#endif
 
 cl_int clRetainEvent(cl_event event) {
     return CL_INVALID_EVENT;
@@ -1703,8 +1661,6 @@ cl_int clRetainEvent(cl_event event) {
 cl_int clReleaseEvent(cl_event event) {
     return CL_INVALID_EVENT;
 }
-
-#ifdef CL_VERSION_1_1
 
 cl_int clSetUserEventStatus(cl_event event, cl_int execution_status) {
     return CL_INVALID_EVENT;
@@ -1715,8 +1671,6 @@ cl_int clSetEventCallback(cl_event event, cl_int command_exec_callback_type,
                           void *user_data) {
     return CL_INVALID_EVENT;
 }
-
-#endif
 
 /***********************************************************************************************************************
 * Profiling APIs
@@ -1789,8 +1743,6 @@ cl_int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, cl_boo
     return CL_SUCCESS;
 }
 
-#ifdef CL_VERSION_1_1
-
 cl_int clEnqueueReadBufferRect(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_read,
                                const size_t *buffer_origin, const size_t *host_origin, const size_t *region,
                                size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch,
@@ -1798,8 +1750,6 @@ cl_int clEnqueueReadBufferRect(cl_command_queue command_queue, cl_mem buffer, cl
                                const cl_event *event_wait_list, cl_event *event) {
     return CL_INVALID_COMMAND_QUEUE;
 }
-
-#endif
 
 cl_int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write, size_t offset,
                             size_t size, const void *ptr, cl_uint num_events_in_wait_list,
@@ -1830,8 +1780,6 @@ cl_int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bo
     return CL_SUCCESS;
 }
 
-#ifdef CL_VERSION_1_1
-
 cl_int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_write,
                                 const size_t *buffer_origin, const size_t *host_origin, const size_t *region,
                                 size_t buffer_row_pitch, size_t buffer_slice_pitch, size_t host_row_pitch,
@@ -1840,25 +1788,17 @@ cl_int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, c
     return CL_INVALID_COMMAND_QUEUE;
 }
 
-#endif
-
-#ifdef CL_VERSION_1_2
-
 cl_int clEnqueueFillBuffer(cl_command_queue command_queue, cl_mem buffer, const void *pattern, size_t pattern_size,
                            size_t offset, size_t size, cl_uint num_events_in_wait_list, const cl_event *event_wait_list,
                            cl_event *event) {
     return CL_INVALID_COMMAND_QUEUE;
 }
 
-#endif
-
 cl_int clEnqueueCopyBuffer(cl_command_queue command_queue, cl_mem src_buffer, cl_mem dst_buffer, size_t src_offset,
                            size_t dst_offset, size_t size, cl_uint num_events_in_wait_list,
                            const cl_event *event_wait_list, cl_event *event) {
     return CL_INVALID_COMMAND_QUEUE;
 }
-
-#ifdef CL_VERSION_1_1
 
 cl_int clEnqueueCopyBufferRect(cl_command_queue command_queue, cl_mem src_buffer, cl_mem dst_buffer,
                                const size_t *src_origin, const size_t *dst_origin, const size_t *region,
@@ -1867,8 +1807,6 @@ cl_int clEnqueueCopyBufferRect(cl_command_queue command_queue, cl_mem src_buffer
                                cl_event *event) {
     return CL_INVALID_COMMAND_QUEUE;
 }
-
-#endif
 
 cl_int clEnqueueReadImage(cl_command_queue command_queue, cl_mem image, cl_bool blocking_read, const size_t *origin,
                           const size_t *region, size_t row_pitch, size_t slice_pitch, void *ptr,
@@ -1882,15 +1820,11 @@ cl_int clEnqueueWriteImage(cl_command_queue command_queue, cl_mem image, cl_bool
     return CL_INVALID_COMMAND_QUEUE;
 }
 
-#ifdef CL_VERSION_1_2
-
 cl_int clEnqueueFillImage(cl_command_queue command_queue, cl_mem image, const void *fill_color, const size_t *origin,
                           const size_t *region, cl_uint num_events_in_wait_list, const cl_event *event_wait_list,
                           cl_event *event) {
     return CL_INVALID_COMMAND_QUEUE;
 }
-
-#endif
 
 cl_int clEnqueueCopyImage(cl_command_queue command_queue, cl_mem src_image, cl_mem dst_image, const size_t *src_origin,
                           const size_t *dst_origin, const size_t *region, cl_uint num_events_in_wait_list,
@@ -1928,15 +1862,11 @@ cl_int clEnqueueUnmapMemObject(cl_command_queue command_queue, cl_mem memobj, vo
     return CL_INVALID_COMMAND_QUEUE;
 }
 
-#ifdef CL_VERSION_1_2
-
 cl_int clEnqueueMigrateMemObjects(cl_command_queue command_queue, cl_uint num_mem_objects, const cl_mem *mem_objects,
                                   cl_mem_migration_flags flags, cl_uint num_events_in_wait_list,
                                   const cl_event *event_wait_list, cl_event *event) {
     return CL_INVALID_COMMAND_QUEUE;
 }
-
-#endif
 
 cl_int clEnqueueNDRangeKernel(cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim,
                               const size_t *global_work_offset, const size_t *global_work_size,
@@ -1974,8 +1904,6 @@ cl_int clEnqueueNativeKernel(cl_command_queue command_queue, void (*user_func)(v
     return CL_INVALID_COMMAND_QUEUE;
 }
 
-#ifdef CL_VERSION_1_2
-
 cl_int clEnqueueMarkerWithWaitList(cl_command_queue command_queue, cl_uint num_events_in_wait_list,
                                    const cl_event *event_wait_list, cl_event *event) {
     return CL_INVALID_COMMAND_QUEUE;
@@ -1985,8 +1913,6 @@ cl_int clEnqueueBarrierWithWaitList(cl_command_queue command_queue, cl_uint num_
                                     const cl_event *event_wait_list, cl_event *event) {
     return CL_INVALID_COMMAND_QUEUE;
 }
-
-#endif
 
 #ifdef CL_VERSION_2_0
 
@@ -2032,22 +1958,14 @@ cl_int clEnqueueSVMMigrateMem(cl_command_queue command_queue, cl_uint num_svm_po
 
 #endif
 
-#ifdef CL_VERSION_1_2
-
 void *clGetExtensionFunctionAddressForPlatform(cl_platform_id platform, const char *func_name) {
     return nullptr;
 }
-
-#endif
-
-#ifdef CL_USE_DEPRECATED_OPENCL_1_0_APIS
 
 cl_int clSetCommandQueueProperty(cl_command_queue command_queue, cl_command_queue_properties properties, cl_bool enable,
                                  cl_command_queue_properties *old_properties) {
     return CL_INVALID_COMMAND_QUEUE;
 }
-
-#endif /* CL_USE_DEPRECATED_OPENCL_1_0_APIS */
 
 /***********************************************************************************************************************
 * Deprecated OpenCL 1.1 APIs
@@ -2306,14 +2224,10 @@ cl_mem clCreateFromGLBuffer(cl_context context, cl_mem_flags flags, cl_GLuint bu
     return nullptr;
 }
 
-#ifdef CL_VERSION_1_2
-
 cl_mem clCreateFromGLTexture(cl_context context, cl_mem_flags flags, cl_GLenum target, cl_GLint miplevel,
                              cl_GLuint texture, cl_int *errcode_ret) {
     return nullptr;
 }
-
-#endif
 
 cl_mem clCreateFromGLRenderbuffer(cl_context context, cl_mem_flags flags, cl_GLuint renderbuffer, cl_int *errcode_ret) {
     return nullptr;

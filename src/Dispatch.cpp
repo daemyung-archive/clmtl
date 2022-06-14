@@ -96,7 +96,30 @@ cl_icd_dispatch *Dispatch::GetTable() {
             .clGetGLTextureInfo = &clGetGLTextureInfo,
             .clEnqueueAcquireGLObjects = &clEnqueueAcquireGLObjects,
             .clEnqueueReleaseGLObjects = &clEnqueueReleaseGLObjects,
-            .clGetGLContextInfoKHR = &clGetGLContextInfoKHR
+            .clGetGLContextInfoKHR = &clGetGLContextInfoKHR,
+            .clSetEventCallback = &clSetEventCallback,
+            .clCreateSubBuffer = &clCreateSubBuffer,
+            .clSetMemObjectDestructorCallback = &clSetMemObjectDestructorCallback,
+            .clCreateUserEvent = &clCreateUserEvent,
+            .clSetUserEventStatus = &clSetUserEventStatus,
+            .clEnqueueReadBufferRect = &clEnqueueReadBufferRect,
+            .clEnqueueWriteBufferRect = &clEnqueueWriteBufferRect,
+            .clEnqueueCopyBufferRect = &clEnqueueCopyBufferRect,
+            .clCreateSubDevices = &clCreateSubDevices,
+            .clRetainDevice = &clRetainDevice,
+            .clReleaseDevice = &clReleaseDevice,
+            .clCreateImage = &clCreateImage,
+            .clCreateProgramWithBuiltInKernels = &clCreateProgramWithBuiltInKernels,
+            .clCompileProgram = &clCompileProgram,
+            .clLinkProgram = &clLinkProgram,
+            .clUnloadPlatformCompiler = &clUnloadPlatformCompiler,
+            .clGetKernelArgInfo = &clGetKernelArgInfo,
+            .clEnqueueFillBuffer = &clEnqueueFillBuffer,
+            .clEnqueueFillImage = &clEnqueueFillImage,
+            .clEnqueueMigrateMemObjects = &clEnqueueMigrateMemObjects,
+            .clEnqueueMarkerWithWaitList = &clEnqueueMarkerWithWaitList,
+            .clEnqueueBarrierWithWaitList = &clEnqueueBarrierWithWaitList,
+            .clGetExtensionFunctionAddressForPlatform = &clGetExtensionFunctionAddressForPlatform
     };
 
     return &sDispatchTable;

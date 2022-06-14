@@ -12,7 +12,7 @@
 
 <p align="center">
     <img src="https://github.com/daemyung/clmtl/actions/workflows/build.yml/badge.svg">
-    <img src="https://img.shields.io/badge/OpenCL-%3C%3D1.0-yellow">
+    <img src="https://img.shields.io/badge/OpenCL-%3C%3D3.0-yellow">
 </p>
 
 <p align="center">
