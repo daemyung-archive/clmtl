@@ -52,6 +52,7 @@ public:
     ~CommandQueue() override;
     void EnqueueReadBuffer(Buffer *srcBuffer, void *dstData, size_t offset, size_t size);
     void EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, size_t offset, size_t size);
+    void EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize);
     void EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize,
                          const std::array<size_t, 3> &localWorkSize);
     void Flush();

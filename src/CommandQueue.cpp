@@ -94,6 +94,22 @@ void CommandQueue::EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, si
     });
 }
 
+void CommandQueue::EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize) {
+    auto commandEncoder = mCommandBuffer->computeCommandEncoder();
+    assert(commandEncoder);
+
+    auto threadsPerThreadGroup = MTL::Size::Make(kernel->GetWorkItemExecutionWidth(),
+                                                 kernel->GetWorkGroupSize() / kernel->GetWorkItemExecutionWidth(),
+                                                 1);
+    assert(threadsPerThreadGroup.width && threadsPerThreadGroup.height && threadsPerThreadGroup.depth);
+
+    BindResources(commandEncoder, kernel);
+    commandEncoder->setComputePipelineState(kernel->GetPipeline());
+    commandEncoder->dispatchThreads(ConvertToSize(globalWorkSize), threadsPerThreadGroup);
+    commandEncoder->endEncoding();
+    commandEncoder->release();
+}
+
 void CommandQueue::EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize,
                                    const std::array<size_t, 3> &localWorkSize) {
     auto commandEncoder = mCommandBuffer->computeCommandEncoder();

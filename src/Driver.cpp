@@ -1892,8 +1892,12 @@ cl_int clEnqueueNDRangeKernel(cl_command_queue command_queue, cl_kernel kernel, 
         return CL_INVALID_KERNEL;
     }
 
-    cmlCommandQueue->EnqueueDispatch(cmlKernel, cml::Util::ConvertToSize(work_dim, global_work_size),
-                                     cml::Util::ConvertToSize(work_dim, local_work_size));
+    if (local_work_size) {
+        cmlCommandQueue->EnqueueDispatch(cmlKernel, cml::Util::ConvertToSize(work_dim, global_work_size),
+                                         cml::Util::ConvertToSize(work_dim, local_work_size));
+    } else {
+        cmlCommandQueue->EnqueueDispatch(cmlKernel, cml::Util::ConvertToSize(work_dim, global_work_size));
+    }
 
     return CL_SUCCESS;
 }
