@@ -58,7 +58,12 @@ Kernel::~Kernel() {
 }
 
 void Kernel::SetArg(size_t index, const void *data, size_t size) {
-    memcpy(mArgTable[index].Data, data, size);
+    if (data) {
+        memcpy(mArgTable[index].Data, data, size);
+    } else {
+        memset(mArgTable[index].Data, 0, size);
+    }
+
     mArgTable[index].Size = size;
 }
 
