@@ -91,7 +91,7 @@ void Device::InitLimits() {
     mLimits.MaxConstantBufferSize = 64;
     mLimits.MaxConstantArgs = 8;
     mLimits.LocalMemType = CL_LOCAL;
-    mLimits.LocalMemSize = 0;
+    mLimits.LocalMemSize = mDevice->maxThreadgroupMemoryLength();
     mLimits.ErrorCorrectionSupport = CL_FALSE;
     mLimits.ProfilingTimeResolution = 1;
     mLimits.EndianLittle = CL_TRUE;
