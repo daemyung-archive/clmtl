@@ -47,6 +47,8 @@ struct Arg {
     clspv::ArgKind Kind;
     union {
         cl_mem Buffer;
+        cl_mem Image;
+        cl_sampler Sampler;
         uint8_t Data[64];
     };
     size_t Size;

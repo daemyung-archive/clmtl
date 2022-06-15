@@ -41,6 +41,7 @@ public:
     size_t GetWidth() const;
     size_t GetHeight() const;
     size_t GetDepth() const;
+    MTL::Texture *GetTexture() const;
 
 private:
     Context *mContext;

@@ -52,6 +52,10 @@ cl_filter_mode Sampler::GetFilterMode() const {
     return mFilterMode;
 }
 
+MTL::SamplerState *Sampler::GetSamplerState() const {
+    return mSamplerState;
+}
+
 void Sampler::InitSamplerState() {
     auto descriptor = MTL::SamplerDescriptor::alloc()->init();
     assert(descriptor);

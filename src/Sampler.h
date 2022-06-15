@@ -49,6 +49,7 @@ public:
     cl_bool GetNormalizedCoords() const;
     cl_addressing_mode GetAddressingMode() const;
     cl_filter_mode GetFilterMode() const;
+    MTL::SamplerState *GetSamplerState() const;
 
 private:
     Context *mContext;

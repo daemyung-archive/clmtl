@@ -20,7 +20,9 @@
 #include "Context.h"
 #include "Device.h"
 #include "Buffer.h"
+#include "Image.h"
 #include "Kernel.h"
+#include "Sampler.h"
 
 namespace cml {
 
@@ -37,7 +39,14 @@ void BindResources(MTL::ComputeCommandEncoder *commandEncoder, Kernel *kernel) {
             case clspv::ArgKind::Pod:
                 commandEncoder->setBytes(arg.Data, arg.Size, index);
                 break;
+            case clspv::ArgKind::StorageImage:
+                commandEncoder->setTexture(Image::DownCast(arg.Image)->GetTexture(), index);
+                break;
+            case clspv::ArgKind::Sampler:
+                commandEncoder->setSamplerState(Sampler::DownCast(arg.Sampler)->GetSamplerState(), index);
+                break;
             default:
+                assert(false);
                 break;
         }
     }

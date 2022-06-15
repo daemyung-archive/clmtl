@@ -29,6 +29,14 @@ auto GetPods(const nlohmann::json &json) {
     return json.at("ubos");
 }
 
+auto GetImages(const nlohmann::json &json) {
+    return json.at("separate_images");
+}
+
+auto GetSamplers(const nlohmann::json &json) {
+    return json.at("separate_samplers");
+}
+
 size_t GetIndex(nlohmann::json::reference resource) {
     return resource.at("binding").get<uint32_t>();
 }
@@ -55,6 +63,12 @@ void Reflector::InitBindingTable() {
     try {
         for (auto pod : GetPods(json)) {
             mBindingTable[GetIndex(pod)].Kind = clspv::ArgKind::Pod;
+        }
+    } catch (std::exception &e) {
+    }
+    try {
+        for (auto image : GetImages(json)) {
+            mBindingTable[GetIndex(image)].Kind = clspv::ArgKind::StorageImage;
         }
     } catch (std::exception &e) {
     }
