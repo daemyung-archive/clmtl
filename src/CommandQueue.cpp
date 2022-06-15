@@ -47,9 +47,9 @@ CommandQueue *CommandQueue::DownCast(cl_command_queue commandQueue) {
     return (CommandQueue *) commandQueue;
 }
 
-CommandQueue::CommandQueue(Context *context, Device *device) :
-        _cl_command_queue{Dispatch::GetTable()}, Object{}, mContext{context}, mDevice{device},
-        mCommandQueue{}, mCommandBuffer{}, mCommittedCommandBuffer{} {
+CommandQueue::CommandQueue(Context *context, Device *device)
+    : _cl_command_queue{Dispatch::GetTable()}, Object{}, mContext{context}, mDevice{device}, mCommandQueue{}
+    , mCommandBuffer{}, mCommittedCommandBuffer{} {
     InitCommandQueue();
     InitCommandBuffer();
 }
@@ -98,14 +98,13 @@ void CommandQueue::EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &
     auto commandEncoder = mCommandBuffer->computeCommandEncoder();
     assert(commandEncoder);
 
-    auto threadsPerThreadGroup = MTL::Size::Make(kernel->GetWorkItemExecutionWidth(),
-                                                 kernel->GetWorkGroupSize() / kernel->GetWorkItemExecutionWidth(),
-                                                 1);
-    assert(threadsPerThreadGroup.width && threadsPerThreadGroup.height && threadsPerThreadGroup.depth);
+    std::array<size_t, 3> workGroupSize{kernel->GetWorkItemExecutionWidth(),
+                                        kernel->GetWorkGroupSize() / kernel->GetWorkItemExecutionWidth(), 1};
+    assert(workGroupSize[0] && workGroupSize[1] && workGroupSize[2]);
 
     BindResources(commandEncoder, kernel);
-    commandEncoder->setComputePipelineState(kernel->GetPipeline());
-    commandEncoder->dispatchThreads(ConvertToSize(globalWorkSize), threadsPerThreadGroup);
+    commandEncoder->setComputePipelineState(kernel->GetPipelineState(workGroupSize));
+    commandEncoder->dispatchThreads(ConvertToSize(globalWorkSize), ConvertToSize(workGroupSize));
     commandEncoder->endEncoding();
     commandEncoder->release();
 }
@@ -116,7 +115,7 @@ void CommandQueue::EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &
     assert(commandEncoder);
 
     BindResources(commandEncoder, kernel);
-    commandEncoder->setComputePipelineState(kernel->GetPipeline());
+    commandEncoder->setComputePipelineState(kernel->GetPipelineState(localWorkSize));
     commandEncoder->dispatchThreads(ConvertToSize(globalWorkSize), ConvertToSize(localWorkSize));
     commandEncoder->endEncoding();
     commandEncoder->release();

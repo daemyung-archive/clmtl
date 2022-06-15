@@ -18,6 +18,7 @@
 #define CLMTL_KERNEL_H
 
 #include <string>
+#include <array>
 #include <CL/cl_icd.h>
 #include <Metal/Metal.hpp>
 
@@ -62,7 +63,7 @@ public:
     Context *GetContext() const;
     Program *GetProgram() const;
     std::string GetName() const;
-    MTL::ComputePipelineState *GetPipeline() const;
+    MTL::ComputePipelineState *GetPipelineState(const std::array<size_t, 3> &workGroupSize);
     size_t GetWorkGroupSize() const;
     size_t GetWorkItemExecutionWidth() const;
     std::unordered_map<uint32_t, Arg> GetArgTable() const;
@@ -70,14 +71,13 @@ public:
 private:
     Program *mProgram;
     std::string mName;
-    MTL::Function *mFunction;
-    MTL::ComputePipelineState *mPipeline;
+    std::unordered_map<uint64_t, MTL::ComputePipelineState *> mPipelineStates;
     Reflector mReflector;
     std::unordered_map<uint32_t, Arg> mArgTable;
 
-    void InitFunction();
-    void InitPipeline();
     void InitArgTable();
+    MTL::Function *CreateFunction(const std::array<size_t, 3> &workGroupSize);
+    void AddPipelineState(uint64_t hash, const std::array<size_t, 3> &workGroupSize);
 };
 
 } //namespace cml
