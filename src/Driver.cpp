@@ -751,7 +751,63 @@ cl_mem clCreateSubBuffer(cl_mem buffer, cl_mem_flags flags, cl_buffer_create_typ
 
 cl_mem clCreateImage(cl_context context, cl_mem_flags flags, const cl_image_format *image_format,
                      const cl_image_desc *image_desc, void *host_ptr, cl_int *errcode_ret) {
-    return nullptr;
+    if (!image_format) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_IMAGE_FORMAT_DESCRIPTOR;
+        }
+
+        return nullptr;
+    }
+
+    if (!image_desc) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_IMAGE_DESCRIPTOR;
+        }
+
+        return nullptr;
+    }
+
+    if (host_ptr && !cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR)) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_HOST_PTR;
+        }
+
+        return nullptr;
+    }
+
+    if (cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR) && !host_ptr) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_HOST_PTR;
+        }
+
+        return nullptr;
+    }
+
+    if (cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR)) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+        }
+
+        return nullptr;
+    }
+
+    auto cmlContext = cml::Context::DownCast(context);
+
+    if (!cmlContext) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_CONTEXT;
+        }
+
+        return nullptr;
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return new cml::Image(cmlContext, flags, *image_format, image_desc->image_type,
+                          std::max(image_desc->image_width, 1ul), std::max(image_desc->image_height, 1ul),
+                          std::max(image_desc->image_depth, 1ul));
 }
 
 #ifdef CL_VERSION_2_0
