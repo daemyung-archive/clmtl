@@ -47,6 +47,8 @@ add_library(clmtl
         src/Reflector.cpp
         src/Kernel.h
         src/Kernel.cpp
+        src/Event.h
+        src/Event.cpp
         src/Sampler.h
         src/Sampler.cpp
 )

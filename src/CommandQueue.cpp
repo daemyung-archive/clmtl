@@ -22,6 +22,7 @@
 #include "Buffer.h"
 #include "Image.h"
 #include "Kernel.h"
+#include "Event.h"
 #include "Sampler.h"
 
 namespace cml {
@@ -128,6 +129,21 @@ void CommandQueue::EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &
     commandEncoder->dispatchThreads(ConvertToSize(globalWorkSize), ConvertToSize(localWorkSize));
     commandEncoder->endEncoding();
     commandEncoder->release();
+}
+
+void CommandQueue::EnqueueSignalEvent(Event *event) {
+    mCommandBuffer->encodeSignalEvent(event->GetEvent(), 1);
+    mCommandBuffer->addScheduledHandler([event](MTL::CommandBuffer *commandBuffer) {
+        event->SetStatus(CL_QUEUED);
+        event->SetStatus(CL_RUNNING);
+    });
+    mCommandBuffer->addCompletedHandler([event](MTL::CommandBuffer *commandBuffer) {
+        event->SetStatus(CL_COMPLETE);
+    });
+}
+
+void CommandQueue::EnqueueWaitEvent(Event *event) {
+    mCommandBuffer->encodeWait(event->GetEvent(), 1);
 }
 
 void CommandQueue::Flush() {

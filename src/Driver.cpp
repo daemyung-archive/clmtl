@@ -26,6 +26,7 @@
 #include "Image.h"
 #include "Program.h"
 #include "Kernel.h"
+#include "Event.h"
 #include "Sampler.h"
 
 /***********************************************************************************************************************
@@ -1704,25 +1705,89 @@ cl_int clGetEventInfo(cl_event event, cl_event_info param_name, size_t param_val
 }
 
 cl_event clCreateUserEvent(cl_context context, cl_int *errcode_ret) {
-    return nullptr;
+    auto cmlContext = cml::Context::DownCast(context);
+
+    if (!cmlContext) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_EVENT;
+        }
+
+        return nullptr;
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return new cml::Event(cmlContext);
 }
 
 cl_int clRetainEvent(cl_event event) {
-    return CL_INVALID_EVENT;
+    auto cmlEvent = cml::Event::DownCast(event);
+
+    if (!cmlEvent) {
+        return CL_INVALID_EVENT;
+    }
+
+    cmlEvent->Retain();
+
+    return CL_SUCCESS;
 }
 
 cl_int clReleaseEvent(cl_event event) {
-    return CL_INVALID_EVENT;
+    auto cmlEvent = cml::Event::DownCast(event);
+
+    if (!cmlEvent) {
+        return CL_INVALID_EVENT;
+    }
+
+    cmlEvent->Release();
+
+    if (!cmlEvent->GetReferenceCount()) {
+        delete cmlEvent;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clSetUserEventStatus(cl_event event, cl_int execution_status) {
-    return CL_INVALID_EVENT;
+    if (execution_status != CL_COMPLETE && execution_status > 0) {
+        return CL_INVALID_VALUE;
+    }
+
+    auto cmlEvent = cml::Event::DownCast(event);
+
+    if (!cmlEvent) {
+        return CL_INVALID_EVENT;
+    }
+
+    cmlEvent->SetStatus(execution_status);
+
+    return CL_SUCCESS;
 }
 
 cl_int clSetEventCallback(cl_event event, cl_int command_exec_callback_type,
                           void (*pfn_notify)(cl_event event, cl_int event_command_status, void *user_data),
                           void *user_data) {
-    return CL_INVALID_EVENT;
+    if (!pfn_notify) {
+        return CL_INVALID_VALUE;
+    }
+
+    if (!cml::Util::TestAnyFlagSet(command_exec_callback_type, CL_COMPLETE | CL_RUNNING | CL_SUBMITTED)) {
+        return CL_INVALID_VALUE;
+    }
+
+    auto cmlEvent = cml::Event::DownCast(event);
+
+    if (!cmlEvent) {
+        return CL_INVALID_EVENT;
+    }
+
+    cmlEvent->SetCallback(command_exec_callback_type, [=](cl_int event_command_status) {
+        pfn_notify(event, event_command_status, user_data);
+    });
+
+    return CL_SUCCESS;
 }
 
 /***********************************************************************************************************************
@@ -1780,6 +1845,16 @@ cl_int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, cl_boo
         return CL_INVALID_COMMAND_QUEUE;
     }
 
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
     auto cmlBuffer = cml::Buffer::DownCast(buffer);
 
     if (!cmlBuffer) {
@@ -1787,6 +1862,16 @@ cl_int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, cl_boo
     }
 
     cmlCommandQueue->EnqueueReadBuffer(cmlBuffer, ptr, offset, size);
+
+    if (event) {
+        auto cmlEvent = cml::Event::DownCast(*event);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+    }
 
     if (blocking_read) {
         cmlCommandQueue->Flush();
@@ -1817,6 +1902,16 @@ cl_int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bo
         return CL_INVALID_COMMAND_QUEUE;
     }
 
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
     auto cmlBuffer = cml::Buffer::DownCast(buffer);
 
     if (!cmlBuffer) {
@@ -1824,6 +1919,16 @@ cl_int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bo
     }
 
     cmlCommandQueue->EnqueueWriteBuffer(ptr, cmlBuffer, offset, size);
+
+    if (event) {
+        auto cmlEvent = cml::Event::DownCast(*event);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+    }
 
     if (blocking_write) {
         cmlCommandQueue->Flush();
@@ -1910,6 +2015,20 @@ void *clEnqueueMapBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool 
         return nullptr;
     }
 
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            if (errcode_ret) {
+                errcode_ret[0] = CL_INVALID_EVENT;
+            }
+
+            return nullptr;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
     auto cmlBuffer = cml::Buffer::DownCast(buffer);
 
     if (!cmlBuffer) {
@@ -1918,6 +2037,20 @@ void *clEnqueueMapBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool 
         }
 
         return nullptr;
+    }
+
+    if (event) {
+        auto cmlEvent = cml::Event::DownCast(*event);
+
+        if (!cmlEvent) {
+            if (errcode_ret) {
+                errcode_ret[0] = CL_INVALID_EVENT;
+            }
+
+            return nullptr;
+        }
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
     }
 
     if (blocking_map) {
@@ -1969,6 +2102,16 @@ cl_int clEnqueueNDRangeKernel(cl_command_queue command_queue, cl_kernel kernel, 
         return CL_INVALID_COMMAND_QUEUE;
     }
 
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
     auto cmlKernel = cml::Kernel::DownCast(kernel);
 
     if (!cmlKernel) {
@@ -1980,6 +2123,16 @@ cl_int clEnqueueNDRangeKernel(cl_command_queue command_queue, cl_kernel kernel, 
                                          cml::Util::ConvertToSize(work_dim, local_work_size));
     } else {
         cmlCommandQueue->EnqueueDispatch(cmlKernel, cml::Util::ConvertToSize(work_dim, global_work_size));
+    }
+
+    if (event) {
+        auto cmlEvent = cml::Event::DownCast(*event);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
     }
 
     return CL_SUCCESS;

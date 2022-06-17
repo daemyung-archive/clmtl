@@ -42,6 +42,7 @@ class Context;
 class Device;
 class Buffer;
 class Kernel;
+class Event;
 
 class CommandQueue : public _cl_command_queue, public Object {
 public:
@@ -55,6 +56,8 @@ public:
     void EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize);
     void EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize,
                          const std::array<size_t, 3> &localWorkSize);
+    void EnqueueSignalEvent(Event *event);
+    void EnqueueWaitEvent(Event *event);
     void Flush();
     void WaitIdle();
     Context *GetContext() const;
