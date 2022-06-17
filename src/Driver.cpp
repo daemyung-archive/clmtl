@@ -1900,7 +1900,37 @@ cl_int clEnqueueCopyBufferToImage(cl_command_queue command_queue, cl_mem src_buf
 void *clEnqueueMapBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool blocking_map, cl_map_flags map_flags,
                          size_t offset, size_t size, cl_uint num_events_in_wait_list, const cl_event *event_wait_list,
                          cl_event *event, cl_int *errcode_ret) {
-    return nullptr;
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_COMMAND_QUEUE;
+        }
+
+        return nullptr;
+    }
+
+    auto cmlBuffer = cml::Buffer::DownCast(buffer);
+
+    if (!cmlBuffer) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_MEM_OBJECT;
+        }
+
+        return nullptr;
+    }
+
+    if (blocking_map) {
+        cmlCommandQueue->WaitIdle();
+    }
+
+    auto data = cmlBuffer->Map();
+
+    if (errcode_ret) {
+        errcode_ret[0] = data ? CL_SUCCESS : CL_MAP_FAILURE;
+    }
+
+    return data;
 }
 
 void *clEnqueueMapImage(cl_command_queue command_queue, cl_mem image, cl_bool blocking_map, cl_map_flags map_flags,
