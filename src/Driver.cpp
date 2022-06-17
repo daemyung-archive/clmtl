@@ -1480,11 +1480,19 @@ cl_kernel clCreateKernel(cl_program program, const char *kernel_name, cl_int *er
         return nullptr;
     }
 
-    if (errcode_ret) {
-        errcode_ret[0] = CL_SUCCESS;
+    cml::Kernel *cmlKernel;
+
+    try {
+        cmlKernel = new cml::Kernel(cmlProgram, kernel_name);
+    } catch (std::exception &e) {
+        cmlKernel = nullptr;
     }
 
-    return new cml::Kernel(cmlProgram, kernel_name);
+    if (errcode_ret) {
+        errcode_ret[0] = cmlKernel ? CL_SUCCESS : CL_INVALID_PROGRAM_EXECUTABLE;
+    }
+
+    return cmlKernel;
 }
 
 cl_int clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kernel *kernels, cl_uint *num_kernels_ret) {

@@ -77,6 +77,7 @@ private:
     Reflector mReflector;
     std::unordered_map<uint32_t, Arg> mArgTable;
 
+    void InitPipelineState();
     void InitArgTable();
     MTL::Function *CreateFunction(const std::array<size_t, 3> &workGroupSize);
     void AddPipelineState(uint64_t hash, const std::array<size_t, 3> &workGroupSize);

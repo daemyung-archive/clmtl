@@ -47,8 +47,8 @@ Kernel *Kernel::DownCast(cl_kernel kernel) {
 Kernel::Kernel(Program *program, std::string name)
     : _cl_kernel{Dispatch::GetTable()}, Object{}, mProgram{program}, mName{std::move(name)}
     , mPipelineStates{}, mReflector{program->GetBinary()}, mArgTable{} {
+    InitPipelineState();
     InitArgTable();
-    AddPipelineState(0, {1, 1, 1});
 }
 
 Kernel::~Kernel() {
@@ -101,6 +101,16 @@ std::unordered_map<uint32_t, Arg> Kernel::GetArgTable() const {
     return mArgTable;
 }
 
+void Kernel::InitPipelineState() {
+    try {
+        AddPipelineState(0, {1, 1, 1});
+    } catch (std::exception &e) {
+        Release();
+
+        throw e;
+    }
+}
+
 void Kernel::InitArgTable() {
     for (auto &[index, binding] : mReflector.GetBindingTable()) {
         mArgTable[index].Kind = binding.Kind;
@@ -130,12 +140,13 @@ void Kernel::AddPipelineState(uint64_t hash, const std::array<size_t, 3> &workGr
     NS::Error *error = nullptr;
 
     mPipelineStates[hash] = Device::GetSingleton()->GetDevice()->newComputePipelineState(function, &error);
-    assert(mPipelineStates[hash]);
 
     function->release();
 
     if (error) {
         error->release();
+
+        throw std::exception();
     }
 }
 
