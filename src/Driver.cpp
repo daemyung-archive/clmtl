@@ -2407,7 +2407,41 @@ cl_sampler clCreateSampler(cl_context context, cl_bool normalized_coords, cl_add
 
 cl_int clEnqueueTask(cl_command_queue command_queue, cl_kernel kernel, cl_uint num_events_in_wait_list,
                      const cl_event *event_wait_list, cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
+    auto cmlKernel = cml::Kernel::DownCast(kernel);
+
+    if (!cmlKernel) {
+        return CL_INVALID_KERNEL;
+    }
+
+    cmlCommandQueue->EnqueueDispatch(cmlKernel, {1, 1, 1}, {1, 1, 1});
+
+    if (event) {
+        auto cmlEvent = cml::Event::DownCast(*event);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+    }
+
+    return CL_SUCCESS;
 }
 
 /***********************************************************************************************************************
