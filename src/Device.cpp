@@ -69,7 +69,7 @@ void Device::InitLimits() {
     mLimits.PreferredVectorWidthFloat = 4;
     mLimits.PreferredVectorWidthDouble = 0;
     mLimits.MaxClockFrequency = 1000;
-    mLimits.AddressBits = 64;
+    mLimits.AddressBits = 32;
     mLimits.MaxReadImageArgs = 32;
     mLimits.MaxWriteImageArgs = 32;
     mLimits.MaxMemAllocSize = mDevice->maxBufferLength();
