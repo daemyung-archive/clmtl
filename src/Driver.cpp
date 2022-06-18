@@ -720,7 +720,7 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
         return nullptr;
     }
 
-    if (cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR | CL_MEM_COPY_HOST_PTR)) {
+    if (cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR)) {
         if (errcode_ret) {
             errcode_ret[0] = CL_MEM_OBJECT_ALLOCATION_FAILURE;
         }
@@ -742,7 +742,11 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
         errcode_ret[0] = CL_SUCCESS;
     }
 
-    return new cml::Buffer(cmlContext, flags, size);
+    if (host_ptr) {
+        return new cml::Buffer(cmlContext, flags, host_ptr, size);
+    } else {
+        return new cml::Buffer(cmlContext, flags, size);
+    }
 }
 
 cl_mem clCreateSubBuffer(cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type,

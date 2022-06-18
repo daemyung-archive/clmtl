@@ -92,7 +92,7 @@ void CommandQueue::EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, si
     auto commandEncoder = mCommandBuffer->blitCommandEncoder();
     assert(commandEncoder);
 
-    auto srcBuffer = new Buffer(mContext, CL_MEM_ALLOC_HOST_PTR, srcData, size);
+    auto srcBuffer = new Buffer(mContext, CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR, srcData, size);
     assert(srcBuffer);
 
     commandEncoder->copyFromBuffer(srcBuffer->GetBuffer(), 0, dstBuffer->GetBuffer(), offset, size);

@@ -26,12 +26,13 @@ namespace cml {
 MTL::ResourceOptions convertToResourceOptions(cl_mem_flags flags) {
     MTL::ResourceOptions options = 0;
 
-    if (Util::TestAnyFlagSet(flags, CL_MEM_READ_WRITE | CL_MEM_WRITE_ONLY | CL_MEM_READ_ONLY)) {
+    if (Util::TestAnyFlagSet(flags, CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR)) {
+        options |= MTL::ResourceStorageModeShared;
+    } else {
         options |= MTL::ResourceStorageModePrivate;
     }
 
-    if (Util::TestAnyFlagSet(flags, CL_MEM_ALLOC_HOST_PTR)) {
-        options |= MTL::ResourceStorageModeShared;
+    if (Util::TestAnyFlagSet(flags, CL_MEM_HOST_WRITE_ONLY)) {
         options |= MTL::ResourceCPUCacheModeWriteCombined;
     }
 
