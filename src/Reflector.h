@@ -23,23 +23,18 @@
 
 namespace cml {
 
-class Buffer;
-
 struct Binding {
+    std::string Kernel;
+    uint32_t Ordinal;
     clspv::ArgKind Kind;
+    uint32_t Index;
+    uint32_t Size;
+    uint32_t Offset;
 };
 
 class Reflector {
 public:
-    Reflector() = default;
-    explicit Reflector(const std::vector<uint32_t> &binary);
-    std::unordered_map<uint32_t, Binding> GetBindingTable() const;
-
-private:
-    std::string mReflection;
-    std::unordered_map<uint32_t, Binding> mBindingTable;
-
-    void InitBindingTable();
+    static std::unordered_map<std::string, std::vector<Binding>> Reflect(const std::vector<uint32_t> &binary);
 };
 
 } //namespace cml

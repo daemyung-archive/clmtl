@@ -22,6 +22,7 @@
 #include <CL/cl_icd.h>
 
 #include "Object.h"
+#include "Reflector.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,6 +49,7 @@ public:
     void AddSource(const std::string &source);
     void Compile();
     void Link(const std::vector<std::vector<uint32_t>> &binaries);
+    void Reflect();
     void SetOptions(const std::string &options);
     void SetBinary(const std::vector<uint32_t> &binary);
     Context *GetContext() const;
@@ -56,6 +58,7 @@ public:
     cl_build_status GetBuildStatus() const;
     std::string GetLog() const;
     std::vector<uint32_t> GetBinary() const;
+    std::unordered_map<std::string, std::vector<Binding>> GetReflection() const;
 
 private:
     Context *mContext;
@@ -64,6 +67,7 @@ private:
     std::vector<uint32_t> mBinary;
     cl_build_status mBuildStatus;
     std::string mLog;
+    std::unordered_map<std::string, std::vector<Binding>> mReflection;
 };
 
 } //namespace cml

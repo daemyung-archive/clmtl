@@ -1325,6 +1325,8 @@ cl_int clBuildProgram(cl_program program, cl_uint num_devices, const cl_device_i
         return CL_BUILD_PROGRAM_FAILURE;
     }
 
+    cmlProgram->Reflect();
+
     return CL_SUCCESS;
 }
 

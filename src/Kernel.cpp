@@ -44,9 +44,9 @@ Kernel *Kernel::DownCast(cl_kernel kernel) {
     return (Kernel *) kernel;
 }
 
-Kernel::Kernel(Program *program, std::string name)
-    : _cl_kernel{Dispatch::GetTable()}, Object{}, mProgram{program}, mName{std::move(name)}
-    , mPipelineStates{}, mReflector{program->GetBinary()}, mArgTable{} {
+Kernel::Kernel(Program *program, const std::string &name)
+    : _cl_kernel{Dispatch::GetTable()}, Object{}, mProgram{program}, mName{name}
+    , mBindings{program->GetReflection().at(name)}, mPipelineStates{}, mArgTable{} {
     InitPipelineState();
     InitArgTable();
 }
@@ -112,8 +112,8 @@ void Kernel::InitPipelineState() {
 }
 
 void Kernel::InitArgTable() {
-    for (auto &[index, binding] : mReflector.GetBindingTable()) {
-        mArgTable[index].Kind = binding.Kind;
+    for (auto &binding : mBindings) {
+        mArgTable[binding.Ordinal] = {.Kind = binding.Kind, .Binding = binding.Index};
     }
 }
 

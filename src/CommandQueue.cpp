@@ -35,19 +35,18 @@ void BindResources(MTL::ComputeCommandEncoder *commandEncoder, Kernel *kernel) {
     for (auto &[index, arg]: kernel->GetArgTable()) {
         switch (arg.Kind) {
             case clspv::ArgKind::Buffer:
-                commandEncoder->setBuffer(Buffer::DownCast(arg.Buffer)->GetBuffer(), 0, index);
+                commandEncoder->setBuffer(Buffer::DownCast(arg.Buffer)->GetBuffer(), 0, arg.Binding);
                 break;
-            case clspv::ArgKind::Pod:
-                commandEncoder->setBytes(arg.Data, arg.Size, index);
+            case clspv::ArgKind::PodUBO:
+                commandEncoder->setBytes(arg.Data, arg.Size, arg.Binding);
                 break;
             case clspv::ArgKind::StorageImage:
-                commandEncoder->setTexture(Image::DownCast(arg.Image)->GetTexture(), index);
+                commandEncoder->setTexture(Image::DownCast(arg.Image)->GetTexture(), arg.Binding);
                 break;
             case clspv::ArgKind::Sampler:
-                commandEncoder->setSamplerState(Sampler::DownCast(arg.Sampler)->GetSamplerState(), index);
+                commandEncoder->setSamplerState(Sampler::DownCast(arg.Sampler)->GetSamplerState(), arg.Binding);
                 break;
             default:
-                assert(false);
                 break;
         }
     }

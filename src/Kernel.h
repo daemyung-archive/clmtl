@@ -45,13 +45,14 @@ class Buffer;
 
 struct Arg {
     clspv::ArgKind Kind;
+    uint32_t Binding;
     union {
         cl_mem Buffer;
         cl_mem Image;
         cl_sampler Sampler;
         uint8_t Data[64];
     };
-    size_t Size;
+    uint32_t Size;
 };
 
 class Kernel : public _cl_kernel, public Object {
@@ -59,7 +60,7 @@ public:
     static Kernel *DownCast(cl_kernel kernel);
 
 public:
-    explicit Kernel(Program *program, std::string name);
+    Kernel(Program *program, const std::string &name);
     ~Kernel() override;
     void SetArg(size_t index, const void *value, size_t size);
     Context *GetContext() const;
@@ -73,8 +74,8 @@ public:
 private:
     Program *mProgram;
     std::string mName;
+    std::vector<Binding> mBindings;
     std::unordered_map<uint64_t, MTL::ComputePipelineState *> mPipelineStates;
-    Reflector mReflector;
     std::unordered_map<uint32_t, Arg> mArgTable;
 
     void InitPipelineState();

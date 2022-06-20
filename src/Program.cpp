@@ -56,6 +56,10 @@ void Program::Link(const std::vector<std::vector<uint32_t>> &binaries) {
     }
 }
 
+void Program::Reflect() {
+    mReflection = Reflector::Reflect(mBinary);
+}
+
 void Program::SetOptions(const std::string &options) {
     mOptions = options + " " + DefaultOptions;
 }
@@ -86,6 +90,10 @@ std::string Program::GetLog() const {
 
 std::vector<uint32_t> Program::GetBinary() const {
     return mBinary;
+}
+
+std::unordered_map<std::string, std::vector<Binding>> Program::GetReflection() const {
+    return mReflection;
 }
 
 } //namespace cml
