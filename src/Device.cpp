@@ -87,7 +87,7 @@ void Device::InitLimits() {
     mLimits.GlobalMemCacheType = 0;
     mLimits.GlobalMemCachelineSize = 0;
     mLimits.GlobalMemCacheSize = 0;
-    mLimits.GlobalMemSize = 0;
+    mLimits.GlobalMemSize = mDevice->recommendedMaxWorkingSetSize();
     mLimits.MaxConstantBufferSize = 64;
     mLimits.MaxConstantArgs = 8;
     mLimits.LocalMemType = CL_LOCAL;
