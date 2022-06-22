@@ -21,6 +21,8 @@ add_subdirectory(deps)
 
 add_library(clmtl
         src/Driver.cpp
+        src/Origin.h
+        src/Size.h
         src/Dispatch.h
         src/Dispatch.cpp
         src/Util.h

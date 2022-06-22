@@ -1983,13 +1983,109 @@ cl_int clEnqueueCopyBufferRect(cl_command_queue command_queue, cl_mem src_buffer
 cl_int clEnqueueReadImage(cl_command_queue command_queue, cl_mem image, cl_bool blocking_read, const size_t *origin,
                           const size_t *region, size_t row_pitch, size_t slice_pitch, void *ptr,
                           cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    if (!ptr) {
+        return CL_INVALID_VALUE;
+    }
+
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
+    auto cmlImage = cml::Image::DownCast(image);
+
+    if (!cmlImage) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    if (cmlImage->GetType() == CL_MEM_OBJECT_IMAGE2D) {
+        if (origin[2] != 0 || region[2] != 1) {
+            return CL_INVALID_VALUE;
+        }
+    }
+
+    if (!row_pitch) {
+        row_pitch = region[0] * cml::Util::GetFormatSize(cmlImage->GetFormat());
+    }
+
+    if (!slice_pitch) {
+        slice_pitch = row_pitch * region[1];
+    }
+
+    cmlCommandQueue->EnqueueReadImage(cmlImage, {origin[0], origin[1], origin[2]}, {region[0], region[1], region[2]},
+                                      ptr, row_pitch, slice_pitch);
+
+    if (blocking_read) {
+        cmlCommandQueue->Flush();
+        cmlCommandQueue->WaitIdle();
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clEnqueueWriteImage(cl_command_queue command_queue, cl_mem image, cl_bool blocking_write, const size_t *origin,
                            const size_t *region, size_t input_row_pitch, size_t input_slice_pitch, const void *ptr,
                            cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    if (!ptr) {
+        return CL_INVALID_VALUE;
+    }
+
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
+    auto cmlImage = cml::Image::DownCast(image);
+
+    if (!cmlImage) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    if (cmlImage->GetType() == CL_MEM_OBJECT_IMAGE2D) {
+        if (origin[2] != 0 || region[2] != 1) {
+            return CL_INVALID_VALUE;
+        }
+    }
+
+    if (!input_row_pitch) {
+        input_row_pitch = region[0] * cml::Util::GetFormatSize(cmlImage->GetFormat());
+    }
+
+    if (!input_slice_pitch) {
+        input_slice_pitch = input_row_pitch * region[1];
+    }
+
+    cmlCommandQueue->EnqueueWriteImage(ptr, input_row_pitch, input_slice_pitch, {region[0], region[1], region[2]},
+                                       cmlImage, {origin[0], origin[1], origin[2]});
+
+    if (blocking_write) {
+        cmlCommandQueue->Flush();
+        cmlCommandQueue->WaitIdle();
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clEnqueueFillImage(cl_command_queue command_queue, cl_mem image, const void *fill_color, const size_t *origin,

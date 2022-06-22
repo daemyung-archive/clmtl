@@ -52,6 +52,38 @@ size_t Util::GetChannelSize(cl_channel_order order) {
     }
 }
 
+size_t Util::GetPixelSize(cl_channel_type type) {
+    switch (type) {
+        case CL_SNORM_INT8:
+        case CL_UNORM_INT8:
+        case CL_SIGNED_INT8:
+        case CL_UNSIGNED_INT8:
+            return 1;
+        case CL_SNORM_INT16:
+        case CL_UNORM_INT16:
+        case CL_UNORM_SHORT_565:
+        case CL_UNORM_SHORT_555:
+        case CL_SIGNED_INT16:
+        case CL_UNSIGNED_INT16:
+        case CL_HALF_FLOAT:
+            return 2;
+        case CL_UNORM_INT24:
+            return 3;
+        case CL_UNORM_INT_101010:
+        case CL_SIGNED_INT32:
+        case CL_UNSIGNED_INT32:
+        case CL_FLOAT:
+        case CL_UNORM_INT_101010_2:
+            return 4;
+        default:
+            throw std::exception();
+    }
+}
+
+size_t Util::GetFormatSize(const cl_image_format &format) {
+    return GetChannelSize(format.image_channel_order) * GetPixelSize(format.image_channel_data_type);
+}
+
 std::array<size_t, 3> Util::ConvertToSize(cl_uint dim, const size_t *size) {
     return {size[0], dim > 1 ? size[1] : 1, dim > 3 ? size[2] : 1};
 }

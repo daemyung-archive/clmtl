@@ -14,25 +14,19 @@
 * limitations under the License.
 ***********************************************************************************************************************/
 
-#ifndef CLMTL_UTIL_H
-#define CLMTL_UTIL_H
+#ifndef CLMTL_ORIGIN_H
+#define CLMTL_ORIGIN_H
 
 #include <cstdint>
-#include <array>
-#include <CL/cl.h>
 
 namespace cml {
 
-class Util {
-public:
-    static bool TestAnyFlagSet(uint64_t bitset, uint64_t test);
-    static intptr_t ReadProperty(const cl_context_properties *properties, uint64_t key);
-    static size_t GetChannelSize(cl_channel_order order);
-    static size_t GetPixelSize(cl_channel_type type);
-    static size_t GetFormatSize(const cl_image_format &format);
-    static std::array<size_t, 3> ConvertToSize(cl_uint dim, const size_t *size);
+struct Origin {
+    size_t x;
+    size_t y;
+    size_t z;
 };
 
 } //namespace cml
 
-#endif //CLMTL_UTIL_H
+#endif //CLMTL_ORIGIN_H

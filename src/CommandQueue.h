@@ -22,6 +22,8 @@
 #include <CL/cl_icd.h>
 #include <Metal/Metal.hpp>
 
+#include "Origin.h"
+#include "Size.h"
 #include "Object.h"
 
 #ifdef __cplusplus
@@ -41,6 +43,7 @@ namespace cml {
 class Context;
 class Device;
 class Buffer;
+class Image;
 class Kernel;
 class Event;
 
@@ -53,6 +56,10 @@ public:
     ~CommandQueue() override;
     void EnqueueReadBuffer(Buffer *srcBuffer, void *dstData, size_t offset, size_t size);
     void EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, size_t offset, size_t size);
+    void EnqueueReadImage(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion, void *dstData,
+                          size_t dstRowPitch, size_t dstSlicePitch);
+    void EnqueueWriteImage(const void *srcData, size_t srcRowPitch, size_t srcSlicePitch, const Size &srcRegion,
+                           Image *dstImage, const Origin &dstOrigin);
     void EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize);
     void EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize,
                          const std::array<size_t, 3> &localWorkSize);

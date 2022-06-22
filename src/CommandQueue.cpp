@@ -31,6 +31,14 @@ MTL::Size ConvertToSize(const std::array<size_t, 3> &size) {
     return {size[0], size[1], size[2]};
 }
 
+MTL::Origin ConvertToOrigin(const Origin &origin) {
+    return MTL::Origin::Make(origin.x, origin.y, origin.z);
+}
+
+MTL::Size ConvertToSize(const Size &size) {
+    return MTL::Size::Make(size.w, size.h, size.d);
+}
+
 void BindResources(MTL::ComputeCommandEncoder *commandEncoder, Kernel *kernel) {
     for (auto &[index, arg]: kernel->GetArgTable()) {
         switch (arg.Kind) {
@@ -96,6 +104,45 @@ void CommandQueue::EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, si
     assert(srcBuffer);
 
     commandEncoder->copyFromBuffer(srcBuffer->GetBuffer(), 0, dstBuffer->GetBuffer(), offset, size);
+    commandEncoder->endEncoding();
+    commandEncoder->release();
+    mCommandBuffer->addCompletedHandler([srcBuffer](MTL::CommandBuffer *commandBuffer) {
+        srcBuffer->Release();
+        delete srcBuffer;
+    });
+}
+
+void CommandQueue::EnqueueReadImage(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion, void *dstData,
+                                    size_t dstRowPitch, size_t dstSlicePitch) {
+    auto commandEncoder = mCommandBuffer->blitCommandEncoder();
+    assert(commandEncoder);
+
+    auto dstBuffer = new Buffer(mContext, CL_MEM_ALLOC_HOST_PTR, dstSlicePitch * srcRegion.d);
+    assert(dstBuffer);
+
+    commandEncoder->copyFromTexture(srcImage->GetTexture(), 0, 0, ConvertToOrigin(srcOrigin), ConvertToSize(srcRegion),
+                                    dstBuffer->GetBuffer(), 0, dstRowPitch, dstSlicePitch);
+    commandEncoder->endEncoding();
+    commandEncoder->release();
+    mCommandBuffer->addCompletedHandler([dstData, dstBuffer](MTL::CommandBuffer *commandBuffer) {
+        memcpy(dstData, dstBuffer->Map(), dstBuffer->GetSize());
+        dstBuffer->Unmap();
+        dstBuffer->Release();
+        delete dstBuffer;
+    });
+}
+
+void CommandQueue::EnqueueWriteImage(const void *srcData, size_t srcRowPitch, size_t srcSlicePitch,
+                                     const Size &srcRegion, Image *dstImage, const Origin &dstOrigin) {
+    auto commandEncoder = mCommandBuffer->blitCommandEncoder();
+    assert(commandEncoder);
+
+    auto srcBuffer = new Buffer(mContext, CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR, srcData,
+                                srcSlicePitch * srcRegion.d);
+    assert(srcBuffer);
+
+    commandEncoder->copyFromBuffer(srcBuffer->GetBuffer(), 0, srcRowPitch, srcSlicePitch, ConvertToSize(srcRegion),
+                                   dstImage->GetTexture(), 0, 0, ConvertToOrigin(dstOrigin));
     commandEncoder->endEncoding();
     commandEncoder->release();
     mCommandBuffer->addCompletedHandler([srcBuffer](MTL::CommandBuffer *commandBuffer) {
