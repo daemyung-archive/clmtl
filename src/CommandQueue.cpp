@@ -40,6 +40,7 @@ void BindResources(MTL::ComputeCommandEncoder *commandEncoder, Kernel *kernel) {
             case clspv::ArgKind::PodUBO:
                 commandEncoder->setBytes(arg.Data, arg.Size, arg.Binding);
                 break;
+            case clspv::ArgKind::SampledImage:
             case clspv::ArgKind::StorageImage:
                 commandEncoder->setTexture(Image::DownCast(arg.Image)->GetTexture(), arg.Binding);
                 break;
