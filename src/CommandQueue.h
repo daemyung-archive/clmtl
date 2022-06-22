@@ -60,9 +60,8 @@ public:
                           size_t dstRowPitch, size_t dstSlicePitch);
     void EnqueueWriteImage(const void *srcData, size_t srcRowPitch, size_t srcSlicePitch, const Size &srcRegion,
                            Image *dstImage, const Origin &dstOrigin);
-    void EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize);
-    void EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize,
-                         const std::array<size_t, 3> &localWorkSize);
+    void EnqueueDispatch(Kernel *kernel, const Size &globalWorkSize);
+    void EnqueueDispatch(Kernel *kernel, const Size &globalWorkSize, const Size &localWorkSize);
     void EnqueueSignalEvent(Event *event);
     void EnqueueWaitEvent(Event *event);
     void Flush();

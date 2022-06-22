@@ -26,16 +26,16 @@
 
 namespace cml {
 
-uint64_t GetHash(const std::array<size_t, 3> &size) {
-    return (size[0] << 42) | (size[1] << 21) | (size[2] << 0);
+uint64_t GetHash(const Size &size) {
+    return (size.w << 42) | (size.h << 21) | (size.d << 0);
 }
 
-MTL::FunctionConstantValues *CreateConstantValues(const std::array<size_t, 3> &workGroupSize) {
+MTL::FunctionConstantValues *CreateConstantValues(const Size &workGroupSize) {
     auto values = MTL::FunctionConstantValues::alloc()->init();
 
-    values->setConstantValue(&workGroupSize[0], MTL::DataTypeUInt, 0ul);
-    values->setConstantValue(&workGroupSize[1], MTL::DataTypeUInt, 1ul);
-    values->setConstantValue(&workGroupSize[2], MTL::DataTypeUInt, 2ul);
+    values->setConstantValue(&workGroupSize.w, MTL::DataTypeUInt, 0ul);
+    values->setConstantValue(&workGroupSize.h, MTL::DataTypeUInt, 1ul);
+    values->setConstantValue(&workGroupSize.d, MTL::DataTypeUInt, 2ul);
 
     return values;
 }
@@ -79,7 +79,7 @@ std::string Kernel::GetName() const {
     return mName;
 }
 
-MTL::ComputePipelineState *Kernel::GetPipelineState(const std::array<size_t, 3> &workGroupSize) {
+MTL::ComputePipelineState *Kernel::GetPipelineState(const Size &workGroupSize) {
     auto hash = GetHash(workGroupSize);
 
     if (!mPipelineStates.count(hash)) {
@@ -117,7 +117,7 @@ void Kernel::InitArgTable() {
     }
 }
 
-MTL::Function *Kernel::CreateFunction(const std::array<size_t, 3> &workGroupSize) {
+MTL::Function *Kernel::CreateFunction(const Size &workGroupSize) {
     auto name = NS::String::alloc()->init(mName.c_str(), NS::UTF8StringEncoding);
     auto constantValues = CreateConstantValues(workGroupSize);
     NS::Error *error = nullptr;
@@ -135,7 +135,7 @@ MTL::Function *Kernel::CreateFunction(const std::array<size_t, 3> &workGroupSize
     return function;
 }
 
-void Kernel::AddPipelineState(uint64_t hash, const std::array<size_t, 3> &workGroupSize) {
+void Kernel::AddPipelineState(uint64_t hash, const Size &workGroupSize) {
     auto function = CreateFunction(workGroupSize);
     NS::Error *error = nullptr;
 

@@ -22,6 +22,7 @@
 #include <CL/cl_icd.h>
 #include <Metal/Metal.hpp>
 
+#include "Size.h"
 #include "Object.h"
 #include "Reflector.h"
 
@@ -66,7 +67,7 @@ public:
     Context *GetContext() const;
     Program *GetProgram() const;
     std::string GetName() const;
-    MTL::ComputePipelineState *GetPipelineState(const std::array<size_t, 3> &workGroupSize);
+    MTL::ComputePipelineState *GetPipelineState(const Size &workGroupSize);
     size_t GetWorkGroupSize() const;
     size_t GetWorkItemExecutionWidth() const;
     std::unordered_map<uint32_t, Arg> GetArgTable() const;
@@ -80,8 +81,8 @@ private:
 
     void InitPipelineState();
     void InitArgTable();
-    MTL::Function *CreateFunction(const std::array<size_t, 3> &workGroupSize);
-    void AddPipelineState(uint64_t hash, const std::array<size_t, 3> &workGroupSize);
+    MTL::Function *CreateFunction(const Size &workGroupSize);
+    void AddPipelineState(uint64_t hash, const Size &workGroupSize);
 };
 
 } //namespace cml

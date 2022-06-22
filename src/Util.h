@@ -21,6 +21,8 @@
 #include <array>
 #include <CL/cl.h>
 
+#include "Size.h"
+
 namespace cml {
 
 class Util {
@@ -30,7 +32,7 @@ public:
     static size_t GetChannelSize(cl_channel_order order);
     static size_t GetPixelSize(cl_channel_type type);
     static size_t GetFormatSize(const cl_image_format &format);
-    static std::array<size_t, 3> ConvertToSize(cl_uint dim, const size_t *size);
+    static Size ConvertToSize(cl_uint dim, const size_t *size);
 };
 
 } //namespace cml

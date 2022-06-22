@@ -27,10 +27,6 @@
 
 namespace cml {
 
-MTL::Size ConvertToSize(const std::array<size_t, 3> &size) {
-    return {size[0], size[1], size[2]};
-}
-
 MTL::Origin ConvertToOrigin(const Origin &origin) {
     return MTL::Origin::Make(origin.x, origin.y, origin.z);
 }
@@ -151,13 +147,13 @@ void CommandQueue::EnqueueWriteImage(const void *srcData, size_t srcRowPitch, si
     });
 }
 
-void CommandQueue::EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize) {
+void CommandQueue::EnqueueDispatch(Kernel *kernel, const Size &globalWorkSize) {
     auto commandEncoder = mCommandBuffer->computeCommandEncoder();
     assert(commandEncoder);
 
-    std::array<size_t, 3> workGroupSize{kernel->GetWorkItemExecutionWidth(),
-                                        kernel->GetWorkGroupSize() / kernel->GetWorkItemExecutionWidth(), 1};
-    assert(workGroupSize[0] && workGroupSize[1] && workGroupSize[2]);
+    Size workGroupSize{kernel->GetWorkItemExecutionWidth(),
+                       kernel->GetWorkGroupSize() / kernel->GetWorkItemExecutionWidth(), 1};
+    assert(workGroupSize.w && workGroupSize.h && workGroupSize.d);
 
     BindResources(commandEncoder, kernel);
     commandEncoder->setComputePipelineState(kernel->GetPipelineState(workGroupSize));
@@ -166,8 +162,7 @@ void CommandQueue::EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &
     commandEncoder->release();
 }
 
-void CommandQueue::EnqueueDispatch(Kernel *kernel, const std::array<size_t, 3> &globalWorkSize,
-                                   const std::array<size_t, 3> &localWorkSize) {
+void CommandQueue::EnqueueDispatch(Kernel *kernel, const Size &globalWorkSize, const Size &localWorkSize) {
     auto commandEncoder = mCommandBuffer->computeCommandEncoder();
     assert(commandEncoder);
 

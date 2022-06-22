@@ -84,8 +84,8 @@ size_t Util::GetFormatSize(const cl_image_format &format) {
     return GetChannelSize(format.image_channel_order) * GetPixelSize(format.image_channel_data_type);
 }
 
-std::array<size_t, 3> Util::ConvertToSize(cl_uint dim, const size_t *size) {
-    return {size[0], dim > 1 ? size[1] : 1, dim > 3 ? size[2] : 1};
+Size Util::ConvertToSize(cl_uint dim, const size_t *size) {
+    return {size[0], dim > 1 ? size[1] : 1, dim > 2 ? size[2] : 1};
 }
 
 } //namespace cml
