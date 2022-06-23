@@ -33,8 +33,8 @@ public:
     Buffer(Context *context, cl_mem_flags flags, size_t size);
     Buffer(Context *context, cl_mem_flags flags, const void *data, size_t size);
     ~Buffer() override;
-    void *Map();
-    void Unmap();
+    void *Map() override;
+    void Unmap() override;
     Context *GetContext() const;
     cl_mem_flags GetMemFlags() const;
     MTL::Buffer *GetBuffer() const;

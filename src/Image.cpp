@@ -130,6 +130,13 @@ Image::~Image() {
     mTexture->release();
 }
 
+void *Image::Map() {
+    return nullptr;
+}
+
+void Image::Unmap() {
+}
+
 Context *Image::GetContext() const {
     return mContext;
 }

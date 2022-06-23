@@ -2194,7 +2194,21 @@ void *clEnqueueMapImage(cl_command_queue command_queue, cl_mem image, cl_bool bl
 
 cl_int clEnqueueUnmapMemObject(cl_command_queue command_queue, cl_mem memobj, void *mapped_ptr,
                                cl_uint num_events_in_wait_list, const cl_event *event_wait_list, cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    auto cmlMemory = cml::Memory::DownCast(memobj);
+
+    if (!cmlMemory) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    cmlMemory->Unmap();
+
+    return CL_SUCCESS;
 }
 
 cl_int clEnqueueMigrateMemObjects(cl_command_queue command_queue, cl_uint num_mem_objects, const cl_mem *mem_objects,

@@ -41,6 +41,8 @@ public:
 
 public:
     Memory();
+    virtual void *Map() = 0;
+    virtual void Unmap() = 0;
 };
 
 } //namespace cml
