@@ -14,43 +14,18 @@
 * limitations under the License.
 ***********************************************************************************************************************/
 
-#ifndef CLMTL_BUFFER_H
-#define CLMTL_BUFFER_H
-
-#include <Metal/Metal.hpp>
-
 #include "Memory.h"
+
+#include "Dispatch.h"
 
 namespace cml {
 
-class Context;
+Memory *Memory::DownCast(cl_mem memory) {
+    return (Memory *) memory;
+}
 
-class Buffer : public Memory {
-public:
-    static Buffer *DownCast(cl_mem buffer);
-
-public:
-    Buffer(Context *context, cl_mem_flags flags, size_t size);
-    Buffer(Context *context, cl_mem_flags flags, const void *data, size_t size);
-    ~Buffer() override;
-    void *Map();
-    void Unmap();
-    Context *GetContext() const;
-    cl_mem_flags GetMemFlags() const;
-    MTL::Buffer *GetBuffer() const;
-    size_t GetSize() const;
-    cl_uint GetMapCount() const;
-
-private:
-    Context *mContext;
-    cl_mem_flags mMemFlags;
-    MTL::Buffer *mBuffer;
-    cl_uint mMapCount;
-
-    void InitBuffer(size_t size);
-    void InitBuffer(const void *data, size_t size);
-};
+Memory::Memory()
+    : _cl_mem{Dispatch::GetTable()}, Object{} {
+}
 
 } //namespace cml
-
-#endif //CLMTL_BUFFER_H

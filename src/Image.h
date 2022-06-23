@@ -19,14 +19,13 @@
 
 #include <Metal/Metal.hpp>
 
-#include "Buffer.h"
-#include "Object.h"
+#include "Memory.h"
 
 namespace cml {
 
 class Context;
 
-class Image : public _cl_mem, public Object {
+class Image : public Memory {
 public:
     static Image *DownCast(cl_mem image);
 

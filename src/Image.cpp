@@ -121,8 +121,8 @@ Image *Image::DownCast(cl_mem image) {
 
 Image::Image(Context *context, cl_mem_flags memFlags, const cl_image_format &format, cl_mem_object_type type,
              size_t width, size_t height, size_t depth)
-    : _cl_mem{Dispatch::GetTable()}, Object{}, mContext{context}, mMemFlags{memFlags}, mFormat{format}
-    , mType{type}, mWidth{width}, mHeight{height}, mDepth{depth}, mTexture{nullptr} {
+    : Memory{}, mContext{context}, mMemFlags{memFlags}, mFormat{format} , mType{type}, mWidth{width}, mHeight{height}
+    , mDepth{depth}, mTexture{nullptr} {
     InitTexture();
 }
 

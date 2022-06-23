@@ -22,6 +22,7 @@
 #include "Device.h"
 #include "Context.h"
 #include "CommandQueue.h"
+#include "Memory.h"
 #include "Buffer.h"
 #include "Image.h"
 #include "Program.h"
@@ -840,28 +841,28 @@ cl_mem clCreateImageWithProperties(cl_context context, const cl_mem_properties *
 #endif
 
 cl_int clRetainMemObject(cl_mem memobj) {
-    auto cmlBuffer = cml::Buffer::DownCast(memobj);
+    auto cmlMemory = cml::Memory::DownCast(memobj);
 
-    if (!cmlBuffer) {
+    if (!cmlMemory) {
         return CL_INVALID_MEM_OBJECT;
     }
 
-    cmlBuffer->Retain();
+    cmlMemory->Retain();
 
     return CL_SUCCESS;
 }
 
 cl_int clReleaseMemObject(cl_mem memobj) {
-    auto cmlBuffer = cml::Buffer::DownCast(memobj);
+    auto cmlMemory = cml::Memory::DownCast(memobj);
 
-    if (!cmlBuffer) {
+    if (!cmlMemory) {
         return CL_INVALID_MEM_OBJECT;
     }
 
-    cmlBuffer->Release();
+    cmlMemory->Release();
 
-    if (!cmlBuffer->GetReferenceCount()) {
-        delete cmlBuffer;
+    if (!cmlMemory->GetReferenceCount()) {
+        delete cmlMemory;
     }
 
     return CL_SUCCESS;

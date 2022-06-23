@@ -43,13 +43,13 @@ Buffer *Buffer::DownCast(cl_mem buffer) {
     return (Buffer *) buffer;
 }
 
-Buffer::Buffer(Context *context, cl_mem_flags flags, size_t size) :
-        _cl_mem{Dispatch::GetTable()}, mContext{context}, mMemFlags{flags}, mBuffer{nullptr}, mMapCount{0} {
+Buffer::Buffer(Context *context, cl_mem_flags flags, size_t size)
+    : Memory{}, mContext{context}, mMemFlags{flags}, mBuffer{nullptr}, mMapCount{0} {
     InitBuffer(size);
 }
 
-Buffer::Buffer(Context *context, cl_mem_flags flags, const void *data, size_t size) :
-        _cl_mem{Dispatch::GetTable()}, mContext{context}, mMemFlags{flags}, mBuffer{nullptr}, mMapCount{0} {
+Buffer::Buffer(Context *context, cl_mem_flags flags, const void *data, size_t size)
+    : Memory{}, mContext{context}, mMemFlags{flags}, mBuffer{nullptr}, mMapCount{0} {
     InitBuffer(data, size);
 }
 

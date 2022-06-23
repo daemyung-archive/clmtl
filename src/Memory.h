@@ -14,43 +14,36 @@
 * limitations under the License.
 ***********************************************************************************************************************/
 
-#ifndef CLMTL_BUFFER_H
-#define CLMTL_BUFFER_H
+#ifndef CLMTL_MEMORY_H
+#define CLMTL_MEMORY_H
 
-#include <Metal/Metal.hpp>
+#include <CL/cl_icd.h>
 
-#include "Memory.h"
+#include "Object.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct _cl_mem {
+    cl_icd_dispatch *Dispatch;
+};
+
+#ifdef __cplusplus
+} //extern "C"
+#endif
 
 namespace cml {
 
-class Context;
-
-class Buffer : public Memory {
+class Memory : public _cl_mem, public Object {
 public:
-    static Buffer *DownCast(cl_mem buffer);
+    static Memory *DownCast(cl_mem memory);
 
 public:
-    Buffer(Context *context, cl_mem_flags flags, size_t size);
-    Buffer(Context *context, cl_mem_flags flags, const void *data, size_t size);
-    ~Buffer() override;
-    void *Map();
-    void Unmap();
-    Context *GetContext() const;
-    cl_mem_flags GetMemFlags() const;
-    MTL::Buffer *GetBuffer() const;
-    size_t GetSize() const;
-    cl_uint GetMapCount() const;
-
-private:
-    Context *mContext;
-    cl_mem_flags mMemFlags;
-    MTL::Buffer *mBuffer;
-    cl_uint mMapCount;
-
-    void InitBuffer(size_t size);
-    void InitBuffer(const void *data, size_t size);
+    Memory();
 };
 
 } //namespace cml
 
-#endif //CLMTL_BUFFER_H
+#endif //CLMTL_MEMORY_H
+

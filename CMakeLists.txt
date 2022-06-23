@@ -39,6 +39,8 @@ add_library(clmtl
         src/Context.cpp
         src/CommandQueue.h
         src/CommandQueue.cpp
+        src/Memory.h
+        src/Memory.cpp
         src/Buffer.h
         src/Buffer.cpp
         src/Image.h
