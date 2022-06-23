@@ -1876,7 +1876,7 @@ cl_int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, cl_boo
         return CL_INVALID_MEM_OBJECT;
     }
 
-    cmlCommandQueue->EnqueueReadBuffer(cmlBuffer, ptr, offset, size);
+    cmlCommandQueue->EnqueueReadBuffer(cmlBuffer, offset, ptr, size);
 
     if (event) {
         auto cmlEvent = cml::Event::DownCast(*event);

@@ -54,7 +54,7 @@ public:
 public:
     CommandQueue(Context *context, Device *device);
     ~CommandQueue() override;
-    void EnqueueReadBuffer(Buffer *srcBuffer, void *dstData, size_t offset, size_t size);
+    void EnqueueReadBuffer(Buffer *srcBuffer, size_t srcOffset, void *dstData, size_t dstSize);
     void EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, size_t offset, size_t size);
     void EnqueueReadImage(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion, void *dstData,
                           size_t dstRowPitch, size_t dstSlicePitch);

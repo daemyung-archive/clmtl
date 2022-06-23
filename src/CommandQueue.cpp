@@ -74,14 +74,14 @@ CommandQueue::~CommandQueue() {
     mCommandQueue->release();
 }
 
-void CommandQueue::EnqueueReadBuffer(Buffer *srcBuffer, void *dstData, size_t offset, size_t size) {
+void CommandQueue::EnqueueReadBuffer(Buffer *srcBuffer, size_t srcOffset, void *dstData, size_t dstSize) {
     auto commandEncoder = mCommandBuffer->blitCommandEncoder();
     assert(commandEncoder);
 
-    auto dstBuffer = new Buffer(mContext, CL_MEM_ALLOC_HOST_PTR, size);
+    auto dstBuffer = new Buffer(mContext, CL_MEM_ALLOC_HOST_PTR, dstSize);
     assert(dstBuffer);
 
-    commandEncoder->copyFromBuffer(srcBuffer->GetBuffer(), 0, dstBuffer->GetBuffer(), offset, size);
+    commandEncoder->copyFromBuffer(srcBuffer->GetBuffer(), srcOffset, dstBuffer->GetBuffer(), 0, dstSize);
     commandEncoder->endEncoding();
     commandEncoder->release();
     mCommandBuffer->addCompletedHandler([dstData, dstBuffer](MTL::CommandBuffer *commandBuffer) {
