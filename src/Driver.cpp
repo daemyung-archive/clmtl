@@ -739,6 +739,10 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
         return nullptr;
     }
 
+    if (!flags) {
+        flags = CL_MEM_READ_WRITE;
+    }
+
     if (errcode_ret) {
         errcode_ret[0] = CL_SUCCESS;
     }
@@ -805,6 +809,10 @@ cl_mem clCreateImage(cl_context context, cl_mem_flags flags, const cl_image_form
         }
 
         return nullptr;
+    }
+
+    if (!flags) {
+        flags = CL_MEM_READ_WRITE;
     }
 
     if (errcode_ret) {
