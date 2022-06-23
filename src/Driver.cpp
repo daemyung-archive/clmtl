@@ -2182,7 +2182,7 @@ void *clEnqueueMapBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool 
         errcode_ret[0] = data ? CL_SUCCESS : CL_MAP_FAILURE;
     }
 
-    return data;
+    return static_cast<uint8_t *>(data) + offset;
 }
 
 void *clEnqueueMapImage(cl_command_queue command_queue, cl_mem image, cl_bool blocking_map, cl_map_flags map_flags,
