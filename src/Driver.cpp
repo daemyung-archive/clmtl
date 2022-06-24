@@ -878,7 +878,23 @@ cl_int clReleaseMemObject(cl_mem memobj) {
 
 cl_int clGetSupportedImageFormats(cl_context context, cl_mem_flags flags, cl_mem_object_type image_type,
                                   cl_uint num_entries, cl_image_format *image_formats, cl_uint *num_image_formats) {
-    return CL_INVALID_CONTEXT;
+    auto cmlContext = cml::Context::DownCast(context);
+
+    if (!cmlContext) {
+        return CL_INVALID_CONTEXT;
+    }
+
+    auto supportedImageFormats = cmlContext->GetSupportedImageFormats();
+
+    if (image_formats) {
+        memcpy(image_formats, supportedImageFormats.data(), sizeof(cl_image_format) * supportedImageFormats.size());
+    }
+
+    if (num_image_formats) {
+        num_image_formats[0] = supportedImageFormats.size();
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_value_size, void *param_value,

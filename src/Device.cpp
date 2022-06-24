@@ -43,6 +43,10 @@ DeviceLimits Device::GetLimits() const {
     return mLimits;
 }
 
+std::vector<MTL::PixelFormat> Device::GetSupportedPixelFormats() const {
+    return mSupportedPixelFormats;
+}
+
 LibraryPool *Device::GetLibraryPool() const {
     return mLibraryPool.get();
 }
@@ -51,6 +55,7 @@ Device::Device() :
         _cl_device_id{Dispatch::GetTable()}, mDevice{MTL::CreateSystemDefaultDevice()},
         mLibraryPool{std::make_unique<LibraryPool>(this)} {
     InitLimits();
+    InitSupportedPixelFormats();
 }
 
 void Device::InitLimits() {
@@ -118,6 +123,34 @@ void Device::InitLimits() {
     mLimits.NativeVectorWidthDouble = 8;
     mLimits.NativeVectorWidthHalf = 2;
     mLimits.CVersion = "OpenCL C 1.0";
+}
+
+void Device::InitSupportedPixelFormats() {
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR8Unorm);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR8Snorm);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR8Uint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR8Sint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR16Unorm);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR16Snorm);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR16Uint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR16Sint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR16Float);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR32Uint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR32Sint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatR32Float);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA8Unorm);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA8Snorm);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA8Uint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA8Sint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatBGRA8Unorm);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA16Unorm);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA16Snorm);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA16Uint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA16Sint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA16Float);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA32Uint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA32Sint);
+    mSupportedPixelFormats.push_back(MTL::PixelFormatRGBA32Float);
 }
 
 } //namespace cml

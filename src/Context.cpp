@@ -17,6 +17,7 @@
 #include "Context.h"
 
 #include "Dispatch.h"
+#include "Util.h"
 #include "Device.h"
 
 namespace cml {
@@ -26,11 +27,22 @@ Context *Context::DownCast(cl_context context) {
 }
 
 Context::Context()
-        : _cl_context{Dispatch::GetTable()}, Object{}, mDevice{Device::GetSingleton()} {
+    : _cl_context{Dispatch::GetTable()}, Object{}, mDevice{Device::GetSingleton()}, mSupportedImageFormats{} {
+    InitSupportedImageFormats();
 }
 
 Device *Context::GetDevice() const {
     return mDevice;
+}
+
+std::vector<cl_image_format> Context::GetSupportedImageFormats() const {
+    return mSupportedImageFormats;
+}
+
+void Context::InitSupportedImageFormats() {
+    for (auto format : mDevice->GetSupportedPixelFormats()) {
+        mSupportedImageFormats.push_back({Util::ConvertToChannelOrder(format), Util::ConvertToChannelType(format)});
+    }
 }
 
 } //namespace cml

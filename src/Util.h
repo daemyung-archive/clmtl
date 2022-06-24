@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <array>
 #include <CL/cl.h>
+#include <Metal/Metal.hpp>
 
 #include "Size.h"
 
@@ -33,6 +34,8 @@ public:
     static size_t GetPixelSize(cl_channel_type type);
     static size_t GetFormatSize(const cl_image_format &format);
     static Size ConvertToSize(cl_uint dim, const size_t *size);
+    static cl_channel_order ConvertToChannelOrder(MTL::PixelFormat format);
+    static cl_channel_type ConvertToChannelType(MTL::PixelFormat format);
 };
 
 } //namespace cml

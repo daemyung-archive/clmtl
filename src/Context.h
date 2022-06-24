@@ -17,6 +17,7 @@
 #ifndef CLMTL_CONTEXT_H
 #define CLMTL_CONTEXT_H
 
+#include <vector>
 #include <CL/cl_icd.h>
 
 #include "Object.h"
@@ -44,9 +45,13 @@ public:
 public:
     Context();
     Device *GetDevice() const;
+    std::vector<cl_image_format> GetSupportedImageFormats() const;
 
 private:
     Device *mDevice;
+    std::vector<cl_image_format> mSupportedImageFormats;
+
+    void InitSupportedImageFormats();
 };
 
 } //namespace cml

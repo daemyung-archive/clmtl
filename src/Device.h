@@ -18,6 +18,7 @@
 #define CLMTL_DEVICE_H
 
 #include <string>
+#include <vector>
 #include <CL/cl_icd.h>
 #include <Metal/Metal.hpp>
 
@@ -111,15 +112,18 @@ public:
     ~Device();
     MTL::Device *GetDevice() const;
     DeviceLimits GetLimits() const;
+    std::vector<MTL::PixelFormat> GetSupportedPixelFormats() const;
     LibraryPool *GetLibraryPool() const;
 
 private:
     MTL::Device *mDevice;
     DeviceLimits mLimits;
+    std::vector<MTL::PixelFormat> mSupportedPixelFormats;
     std::unique_ptr<LibraryPool> mLibraryPool;
 
     Device();
     void InitLimits();
+    void InitSupportedPixelFormats();
 };
 
 } //namespace cml
