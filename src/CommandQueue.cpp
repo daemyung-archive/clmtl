@@ -17,6 +17,7 @@
 #include "CommandQueue.h"
 
 #include "Dispatch.h"
+#include "Util.h"
 #include "Context.h"
 #include "Device.h"
 #include "Buffer.h"
@@ -145,6 +146,23 @@ void CommandQueue::EnqueueWriteImage(const void *srcData, size_t srcRowPitch, si
         srcBuffer->Release();
         delete srcBuffer;
     });
+}
+
+void CommandQueue::EnqueueCopyImageToBuffer(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion,
+                                            Buffer *dstBuffer, size_t dstOffset) {
+    auto commandEncoder = mCommandBuffer->blitCommandEncoder();
+    assert(commandEncoder);
+
+    auto dstRowPitch = srcRegion.w * cml::Util::GetFormatSize(srcImage->GetFormat());
+    assert(!(dstRowPitch % 32) || !(dstRowPitch % 767));
+
+    auto dstSlicePitch = dstRowPitch * srcRegion.h;
+    assert(dstSlicePitch);
+
+    commandEncoder->copyFromTexture(srcImage->GetTexture(), 0, 0, ConvertToOrigin(srcOrigin), ConvertToSize(srcRegion),
+                                    dstBuffer->GetBuffer(), dstOffset, dstRowPitch, dstSlicePitch);
+    commandEncoder->endEncoding();
+    commandEncoder->release();
 }
 
 void CommandQueue::EnqueueDispatch(Kernel *kernel, const Size &globalWorkSize) {
