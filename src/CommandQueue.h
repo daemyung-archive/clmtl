@@ -64,6 +64,8 @@ public:
                           const Origin &dstOrigin);
     void EnqueueCopyImageToBuffer(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion, Buffer *dstBuffer,
                                   size_t dstOffset);
+    void EnqueueCopyBufferToImage(Buffer *srcBuffer, size_t srcOffset, const Size &srcRegion, Image *dstImage,
+                                  const Origin &dstOrigin);
     void EnqueueDispatch(Kernel *kernel, const Size &globalWorkSize);
     void EnqueueDispatch(Kernel *kernel, const Size &globalWorkSize, const Size &localWorkSize);
     void EnqueueSignalEvent(Event *event);

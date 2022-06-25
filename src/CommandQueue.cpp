@@ -176,6 +176,23 @@ void CommandQueue::EnqueueCopyImageToBuffer(Image *srcImage, const Origin &srcOr
     commandEncoder->release();
 }
 
+void CommandQueue::EnqueueCopyBufferToImage(Buffer *srcBuffer, size_t srcOffset, const Size &srcRegion, Image *dstImage,
+                                            const Origin &dstOrigin) {
+    auto commandEncoder = mCommandBuffer->blitCommandEncoder();
+    assert(commandEncoder);
+
+    auto srcRowPitch = srcRegion.w * cml::Util::GetFormatSize(dstImage->GetFormat());
+    assert(!(srcRowPitch % 32) || !(srcRowPitch % 767));
+
+    auto srcSlicePitch = srcRowPitch * srcRegion.h;
+    assert(srcSlicePitch);
+
+    commandEncoder->copyFromBuffer(srcBuffer->GetBuffer(), srcOffset, srcRowPitch, srcSlicePitch,
+                                   ConvertToSize(srcRegion), dstImage->GetTexture(), 0, 0, ConvertToOrigin(dstOrigin));
+    commandEncoder->endEncoding();
+    commandEncoder->release();
+}
+
 void CommandQueue::EnqueueDispatch(Kernel *kernel, const Size &globalWorkSize) {
     auto commandEncoder = mCommandBuffer->computeCommandEncoder();
     assert(commandEncoder);
