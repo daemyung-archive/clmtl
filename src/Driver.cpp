@@ -2122,7 +2122,47 @@ cl_int clEnqueueFillImage(cl_command_queue command_queue, cl_mem image, const vo
 cl_int clEnqueueCopyImage(cl_command_queue command_queue, cl_mem src_image, cl_mem dst_image, const size_t *src_origin,
                           const size_t *dst_origin, const size_t *region, cl_uint num_events_in_wait_list,
                           const cl_event *event_wait_list, cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
+    auto cmlSrcImage = cml::Image::DownCast(src_image);
+
+    if (!cmlSrcImage) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    auto cmlDstImage = cml::Image::DownCast(dst_image);
+
+    if (!cmlDstImage) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    cmlCommandQueue->EnqueueCopyImage(cmlSrcImage, {src_origin[0], src_origin[1], src_origin[2]},
+                                      {region[0], region[1], region[2]}, cmlDstImage,
+                                      {dst_origin[0], dst_origin[1], dst_origin[2]});
+
+    if (event) {
+        auto cmlEvent = new cml::Event(cmlCommandQueue->GetContext());
+        assert(cmlEvent);
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clEnqueueCopyImageToBuffer(cl_command_queue command_queue, cl_mem src_image, cl_mem dst_buffer,

@@ -60,6 +60,8 @@ public:
                           size_t dstRowPitch, size_t dstSlicePitch);
     void EnqueueWriteImage(const void *srcData, size_t srcRowPitch, size_t srcSlicePitch, const Size &srcRegion,
                            Image *dstImage, const Origin &dstOrigin);
+    void EnqueueCopyImage(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion, Image *dstImage,
+                          const Origin &dstOrigin);
     void EnqueueCopyImageToBuffer(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion, Buffer *dstBuffer,
                                   size_t dstOffset);
     void EnqueueDispatch(Kernel *kernel, const Size &globalWorkSize);

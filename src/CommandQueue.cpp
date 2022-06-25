@@ -148,6 +148,17 @@ void CommandQueue::EnqueueWriteImage(const void *srcData, size_t srcRowPitch, si
     });
 }
 
+void CommandQueue::EnqueueCopyImage(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion, Image *dstImage,
+                                    const Origin &dstOrigin) {
+    auto commandEncoder = mCommandBuffer->blitCommandEncoder();
+    assert(commandEncoder);
+
+    commandEncoder->copyFromTexture(srcImage->GetTexture(), 0, 0, ConvertToOrigin(srcOrigin), ConvertToSize(srcRegion),
+                                    dstImage->GetTexture(), 0, 0, ConvertToOrigin(dstOrigin));
+    commandEncoder->endEncoding();
+    commandEncoder->release();
+}
+
 void CommandQueue::EnqueueCopyImageToBuffer(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion,
                                             Buffer *dstBuffer, size_t dstOffset) {
     auto commandEncoder = mCommandBuffer->blitCommandEncoder();
