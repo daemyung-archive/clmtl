@@ -974,7 +974,7 @@ cl_int clGetImageInfo(cl_mem image, cl_image_info param_name, size_t param_value
             break;
         case CL_IMAGE_ELEMENT_SIZE:
             size = sizeof(size_t);
-            *((size_t *) info) = cml::Util::GetChannelSize(cmlImage->GetFormat().image_channel_order);
+            *((size_t *) info) = cml::Util::GetFormatSize(cmlImage->GetFormat());
             break;
         case CL_IMAGE_ROW_PITCH:
             size = sizeof(size_t);
