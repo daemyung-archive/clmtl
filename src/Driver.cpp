@@ -1625,7 +1625,7 @@ cl_int clGetKernelInfo(cl_kernel kernel, cl_kernel_info param_name, size_t param
             break;
         case CL_KERNEL_NUM_ARGS:
             size = sizeof(cl_uint);
-            *((cl_uint *) info) = 0;
+            *((cl_uint *) info) = cmlKernel->GetArgTable().size();
             break;
         case CL_KERNEL_REFERENCE_COUNT:
             size = sizeof(cl_uint);
