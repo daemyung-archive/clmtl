@@ -23,6 +23,8 @@
 ## Limitations
 
 * Only one device is supported per one context.
+* Not support `char8`, `char16`, `uchar8`, `uchar16`, `short8`, `short16`, `ushort8`, `ushort16`, `int8`, `int16`,
+  `uint8`, `uint16`, `long8`, `long16`, `ulong8`, `ulong16`, `float8` and `float16`.
 
 ## Build
 
