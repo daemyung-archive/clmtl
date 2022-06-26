@@ -31,15 +31,15 @@ class LibraryPool {
 public:
     explicit LibraryPool(Device *device);
     ~LibraryPool();
-    MTL::Library *At(Program *program);
+    MTL::Library *At(Program *program, const std::string &defines);
 
 private:
     Device *mDevice;
-    std::unordered_map<Program *, MTL::Library *> mLibraries;
+    std::unordered_map<Program *, std::unordered_map<std::string, MTL::Library *>> mLibraries;
     spirv_cross::CompilerMSL::Options mMslOptions;
 
     void InitMslOptions();
-    void AddLibrary(Program *program);
+    void AddLibrary(Program *program, const std::string &defines);
 };
 
 } //namespace cml

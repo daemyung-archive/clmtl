@@ -16,12 +16,23 @@
 
 #include "LibraryPool.h"
 
+#include <sstream>
 #include <Foundation/Foundation.hpp>
 
 #include "Device.h"
 #include "Program.h"
 
 namespace cml {
+
+uint64_t GetHash(const std::unordered_map<uint32_t, std::string> &defines) {
+    std::stringstream stream;
+
+    for (auto &[ordinal, define] : defines) {
+        stream << define;
+    }
+
+    return std::hash<std::string>{}(stream.str());
+}
 
 void KeepResourceBindings(spirv_cross::CompilerMSL &compiler) {
     const auto resources = compiler.get_shader_resources();
@@ -76,35 +87,37 @@ LibraryPool::LibraryPool(Device *device) :
 }
 
 LibraryPool::~LibraryPool() {
-    for (auto &[program, library] : mLibraries) {
-        library->release();
+    for (auto &[program, libraries] : mLibraries) {
+        for (auto &[defines, library] : libraries) {
+            library->release();
+        }
     }
 }
 
-MTL::Library *LibraryPool::At(Program *program) {
-    if (!mLibraries.count(program)) {
-        AddLibrary(program);
+MTL::Library *LibraryPool::At(Program *program, const std::string &defines) {
+    if (!mLibraries.count(program) || !mLibraries.at(program).count(defines)) {
+        AddLibrary(program, defines);
     }
 
-    return mLibraries[program];
+    return mLibraries[program][defines];
 }
 
 void LibraryPool::InitMslOptions() {
     mMslOptions.set_msl_version(2, 3);
 }
 
-void LibraryPool::AddLibrary(Program *program) {
+void LibraryPool::AddLibrary(Program *program, const std::string &defines) {
     auto compiler = spirv_cross::CompilerMSL(program->GetBinary());
 
     compiler.set_msl_options(mMslOptions);
     KeepResourceBindings(compiler);
 
-    auto shader = compiler.compile();
+    auto shader = defines + compiler.compile();
     auto source = NS::String::alloc()->init(shader.c_str(), NS::UTF8StringEncoding);
     NS::Error *error;
 
-    mLibraries[program] = mDevice->GetDevice()->newLibrary(source, nullptr, &error);
-    assert(mLibraries[program]);
+    mLibraries[program][defines] = mDevice->GetDevice()->newLibrary(source, nullptr, &error);
+    assert(mLibraries[program][defines]);
 
     source->release();
 

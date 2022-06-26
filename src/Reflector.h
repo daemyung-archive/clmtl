@@ -30,6 +30,7 @@ struct Binding {
     uint32_t Index;
     uint32_t Size;
     uint32_t Offset;
+    uint32_t Spec;
 };
 
 class Reflector {

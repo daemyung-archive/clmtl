@@ -76,9 +76,11 @@ private:
     Program *mProgram;
     std::string mName;
     std::vector<Binding> mBindings;
-    std::unordered_map<uint64_t, MTL::ComputePipelineState *> mPipelineStates;
+    std::unordered_map<uint64_t, std::unordered_map<std::string, MTL::ComputePipelineState *>> mPipelineStates;
+    std::unordered_map<uint32_t, std::string> mDefines;
     std::unordered_map<uint32_t, Arg> mArgTable;
 
+    void InitBindings();
     void InitPipelineState();
     void InitArgTable();
     MTL::Function *CreateFunction(const Size &workGroupSize);

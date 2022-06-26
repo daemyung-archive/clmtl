@@ -169,11 +169,13 @@ private:
         mReflection[binding.Kernel].push_back(binding);
     }
 
-    void ParseArgKindKernelOrdinal(const spv_parsed_instruction_t *inst) {
+    void ParseArgKindKernelOrdinalSizeSpec(const spv_parsed_instruction_t *inst) {
         Binding binding{
             .Kernel = mStrings[inst->words[inst->operands[4].offset]],
             .Ordinal = mConstants[inst->words[inst->operands[5].offset]],
-            .Kind = ConvertToArgKind(inst->words[inst->operands[3].offset])
+            .Kind = ConvertToArgKind(inst->words[inst->operands[3].offset]),
+            .Size = mConstants[inst->words[inst->operands[7].offset]],
+            .Spec = mConstants[inst->words[inst->operands[6].offset]]
         };
 
         mReflection[binding.Kernel].push_back(binding);
@@ -203,7 +205,7 @@ private:
                     ParseArgKindKernelOrdinalOffsetSize(inst);
                     break;
                 case ExtInst::ArgumentWorkgroup:
-                    ParseArgKindKernelOrdinal(inst);
+                    ParseArgKindKernelOrdinalSizeSpec(inst);
                     break;
                 default:
                     break;
