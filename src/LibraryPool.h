@@ -36,9 +36,7 @@ public:
 private:
     Device *mDevice;
     std::unordered_map<Program *, std::unordered_map<std::string, MTL::Library *>> mLibraries;
-    spirv_cross::CompilerMSL::Options mMslOptions;
 
-    void InitMslOptions();
     void AddLibrary(Program *program, const std::string &defines);
 };
 

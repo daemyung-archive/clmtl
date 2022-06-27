@@ -1537,7 +1537,23 @@ cl_int clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kern
         return CL_INVALID_PROGRAM;
     }
 
-    return CL_OUT_OF_RESOURCES;
+    auto reflection = cmlProgram->GetReflection();
+
+    if (kernels) {
+        if (num_kernels < reflection.size()) {
+            return CL_INVALID_VALUE;
+        }
+
+        std::transform(reflection.begin(), reflection.end(), kernels, [cmlProgram](auto iter) {
+            return new cml::Kernel(cmlProgram, iter.first);
+        });
+    }
+
+    if (num_kernels_ret) {
+        num_kernels_ret[0] = reflection.size();
+    }
+
+    return CL_SUCCESS;
 }
 
 #ifdef CL_VERSION_2_1

@@ -27,6 +27,53 @@
 
 namespace cml {
 
+void KeepResourceBindings(spirv_cross::CompilerMSL &compiler) {
+    const auto resources = compiler.get_shader_resources();
+    const auto stage = compiler.get_execution_model();
+
+    for (const auto &resource : resources.uniform_buffers) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                              .msl_texture = binding, .msl_sampler = binding});
+    }
+
+    for (const auto &resource : resources.storage_buffers) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                              .msl_texture = binding, .msl_sampler = binding});
+    }
+
+    for (const auto &resource : resources.storage_images) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                              .msl_texture = binding, .msl_sampler = binding});
+    }
+
+    for (auto &resource : resources.sampled_images) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                              .msl_texture = binding, .msl_sampler = binding});
+    }
+
+    for (auto &resource : resources.separate_images) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                              .msl_texture = binding, .msl_sampler = binding});
+    }
+
+    for (const auto &resource : resources.separate_samplers) {
+        auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+
+        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
+                                              .msl_texture = binding, .msl_sampler = binding});
+    }
+}
+
 std::string ConvertToString(const std::unordered_map<uint32_t, std::string> &defines) {
     std::stringstream stream;
 
@@ -59,6 +106,7 @@ Kernel::Kernel(Program *program, const std::string &name)
     : _cl_kernel{Dispatch::GetTable()}, Object{}, mProgram{program}, mName{name}
     , mBindings{program->GetReflection().at(name)}, mPipelineStates{}, mArgTable{} {
     InitBindings();
+    InitSource();
     InitPipelineState();
     InitArgTable();
 }
@@ -126,6 +174,21 @@ void Kernel::InitBindings() {
     std::sort(mBindings.begin(), mBindings.end(), [](auto &lhs, auto &rhs) { return lhs.Ordinal < rhs.Ordinal; });
 }
 
+void Kernel::InitSource() {
+    spirv_cross::CompilerMSL::Options options;
+
+    options.set_msl_version(2, 3);
+
+    spirv_cross::CompilerMSL compiler(mProgram->GetBinary());
+
+    compiler.set_msl_options(options);
+    compiler.set_entry_point(mName, spv::ExecutionModelGLCompute);
+    KeepResourceBindings(compiler);
+
+    mSource = compiler.compile();
+    assert(!mSource.empty());
+}
+
 void Kernel::InitPipelineState() {
     try {
         AddPipelineState(0, {1, 1, 1});
@@ -147,8 +210,8 @@ MTL::Function *Kernel::CreateFunction(const Size &workGroupSize) {
     auto constantValues = CreateConstantValues(workGroupSize);
     NS::Error *error = nullptr;
 
-    auto function = Device::GetSingleton()->GetLibraryPool()->At(mProgram, ConvertToString(mDefines))->
-        newFunction(name, constantValues, &error);
+    auto function = Device::GetSingleton()->GetLibraryPool()->
+        At(mProgram, ConvertToString(mDefines) + mSource)->newFunction(name, constantValues, &error);
     assert(function);
 
     name->release();
