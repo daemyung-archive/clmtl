@@ -85,7 +85,7 @@ size_t Util::GetFormatSize(const cl_image_format &format) {
 }
 
 Size Util::ConvertToSize(cl_uint dim, const size_t *size) {
-    return {size[0], dim > 1 ? size[1] : 1, dim > 2 ? size[2] : 1};
+    return {size[0], dim > 1 ? size[1] : 0, dim > 2 ? size[2] : 0};
 }
 
 cl_channel_order Util::ConvertToChannelOrder(MTL::PixelFormat format) {

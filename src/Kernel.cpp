@@ -88,12 +88,29 @@ uint64_t GetHash(const Size &size) {
     return (size.w << 42) | (size.h << 21) | (size.d << 0);
 }
 
-MTL::FunctionConstantValues *CreateConstantValues(const Size &workGroupSize) {
+uint32_t GetDimension(const Size &size) {
+    uint32_t dimension = 1;
+
+    if (size.h) {
+        dimension += 1;
+    }
+
+    if (size.d) {
+        dimension += 1;
+    }
+
+    return dimension;
+}
+
+MTL::FunctionConstantValues *CreateConstantValues(const Size &workGroupSize, uint32_t dimension) {
+    auto h = std::max(workGroupSize.h, 1ul);
+    auto d = std::max(workGroupSize.d, 1ul);
     auto values = MTL::FunctionConstantValues::alloc()->init();
 
+    values->setConstantValue(&dimension, MTL::DataTypeUInt, 3ul);
     values->setConstantValue(&workGroupSize.w, MTL::DataTypeUInt, 0ul);
-    values->setConstantValue(&workGroupSize.h, MTL::DataTypeUInt, 1ul);
-    values->setConstantValue(&workGroupSize.d, MTL::DataTypeUInt, 2ul);
+    values->setConstantValue(&h, MTL::DataTypeUInt, 1ul);
+    values->setConstantValue(&d, MTL::DataTypeUInt, 2ul);
 
     return values;
 }
@@ -207,7 +224,7 @@ void Kernel::InitArgTable() {
 
 MTL::Function *Kernel::CreateFunction(const Size &workGroupSize) {
     auto name = NS::String::alloc()->init(mName.c_str(), NS::UTF8StringEncoding);
-    auto constantValues = CreateConstantValues(workGroupSize);
+    auto constantValues = CreateConstantValues(workGroupSize, GetDimension(workGroupSize));
     NS::Error *error = nullptr;
 
     auto function = Device::GetSingleton()->GetLibraryPool()->

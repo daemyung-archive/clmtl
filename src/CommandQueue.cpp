@@ -33,7 +33,7 @@ MTL::Origin ConvertToOrigin(const Origin &origin) {
 }
 
 MTL::Size ConvertToSize(const Size &size) {
-    return MTL::Size::Make(size.w, size.h, size.d);
+    return MTL::Size::Make(size.w, std::max(size.h, 1lu), std::max(size.d, 1lu));
 }
 
 void BindResources(MTL::ComputeCommandEncoder *commandEncoder, Kernel *kernel) {
