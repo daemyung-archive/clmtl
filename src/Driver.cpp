@@ -2333,6 +2333,7 @@ void *clEnqueueMapBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool 
     }
 
     if (blocking_map) {
+        cmlCommandQueue->Flush();
         cmlCommandQueue->WaitIdle();
     }
 
