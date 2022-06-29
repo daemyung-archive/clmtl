@@ -31,6 +31,7 @@ struct _cl_event {
 namespace cml {
 
 class Context;
+class CommandQueue;
 
 class Event : public _cl_event, public Object {
 public:
@@ -38,13 +39,16 @@ public:
 
 public:
     explicit Event(Context *context);
+    explicit Event(CommandQueue *commandQueue);
     ~Event() override;
+    void WaitComplete() const;
     void SetStatus(cl_int status);
     void SetCallback(cl_int type, std::function<void (cl_int)> callback);
     MTL::Event *GetEvent() const;
 
 private:
     Context *mContext;
+    CommandQueue *mCommandQueue;
     cl_int mStatus;
     MTL::Event *mEvent;
     std::unordered_map<cl_int, std::function<void (cl_int)>> mCallbacks;

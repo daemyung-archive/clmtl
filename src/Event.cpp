@@ -19,6 +19,7 @@
 #include "Dispatch.h"
 #include "Context.h"
 #include "Device.h"
+#include "CommandQueue.h"
 
 namespace cml {
 
@@ -27,12 +28,26 @@ Event *Event::DownCast(cl_event event) {
 }
 
 Event::Event(Context *context)
-    : _cl_event{Dispatch::GetTable()}, Object{}, mContext{context}, mStatus{-1}, mEvent{nullptr} {
+    : _cl_event{Dispatch::GetTable()}, Object{}, mContext{context}, mCommandQueue{nullptr}, mStatus{-1}
+    , mEvent{nullptr} {
+    InitEvent();
+}
+
+Event::Event(CommandQueue *commandQueue)
+    : _cl_event{Dispatch::GetTable()}, Object{}, mContext{commandQueue->GetContext()}, mCommandQueue{commandQueue}
+    , mStatus{-1}, mEvent{nullptr} {
     InitEvent();
 }
 
 Event::~Event() {
     mEvent->release();
+}
+
+void Event::WaitComplete() const {
+    if (mStatus != CL_COMPLETE) {
+        mCommandQueue->Flush();
+        mCommandQueue->WaitIdle();
+    }
 }
 
 void Event::SetStatus(cl_int status) {

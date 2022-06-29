@@ -1751,7 +1751,21 @@ cl_int clGetKernelSubGroupInfo(cl_kernel kernel, cl_device_id device, cl_kernel_
 ***********************************************************************************************************************/
 
 cl_int clWaitForEvents(cl_uint num_events, const cl_event *event_list) {
-    return CL_INVALID_EVENT;
+    if (!num_events || !event_list) {
+        return CL_INVALID_VALUE;
+    }
+
+    for (auto i = 0; i != num_events; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlEvent->WaitComplete();
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clGetEventInfo(cl_event event, cl_event_info param_name, size_t param_value_size, void *param_value,
@@ -1919,13 +1933,11 @@ cl_int clEnqueueReadBuffer(cl_command_queue command_queue, cl_mem buffer, cl_boo
     cmlCommandQueue->EnqueueReadBuffer(cmlBuffer, offset, ptr, size);
 
     if (event) {
-        auto cmlEvent = cml::Event::DownCast(*event);
-
-        if (!cmlEvent) {
-            return CL_INVALID_EVENT;
-        }
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
 
         cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
     }
 
     if (blocking_read) {
@@ -1976,13 +1988,11 @@ cl_int clEnqueueWriteBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bo
     cmlCommandQueue->EnqueueWriteBuffer(ptr, cmlBuffer, offset, size);
 
     if (event) {
-        auto cmlEvent = cml::Event::DownCast(*event);
-
-        if (!cmlEvent) {
-            return CL_INVALID_EVENT;
-        }
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
 
         cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
     }
 
     if (blocking_write) {
@@ -2171,7 +2181,7 @@ cl_int clEnqueueCopyImage(cl_command_queue command_queue, cl_mem src_image, cl_m
                                       {dst_origin[0], dst_origin[1], dst_origin[2]});
 
     if (event) {
-        auto cmlEvent = new cml::Event(cmlCommandQueue->GetContext());
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
         assert(cmlEvent);
 
         cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
@@ -2216,7 +2226,7 @@ cl_int clEnqueueCopyImageToBuffer(cl_command_queue command_queue, cl_mem src_ima
                                               {region[0], region[1], region[2]}, cmlBuffer, dst_offset);
 
     if (event) {
-        auto cmlEvent = new cml::Event(cmlCommandQueue->GetContext());
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
         assert(cmlEvent);
 
         cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
@@ -2261,7 +2271,7 @@ cl_int clEnqueueCopyBufferToImage(cl_command_queue command_queue, cl_mem src_buf
                                               {dst_origin[0], dst_origin[1], dst_origin[2]});
 
     if (event) {
-        auto cmlEvent = new cml::Event(cmlCommandQueue->GetContext());
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
         assert(cmlEvent);
 
         cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
