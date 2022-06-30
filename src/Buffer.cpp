@@ -26,10 +26,10 @@ namespace cml {
 MTL::ResourceOptions convertToResourceOptions(cl_mem_flags flags) {
     MTL::ResourceOptions options = 0;
 
-    if (Util::TestAnyFlagSet(flags, CL_MEM_ALLOC_HOST_PTR | CL_MEM_COPY_HOST_PTR)) {
-        options |= MTL::ResourceStorageModeShared;
-    } else {
+    if (Util::TestAnyFlagSet(flags, CL_MEM_HOST_NO_ACCESS)) {
         options |= MTL::ResourceStorageModePrivate;
+    } else {
+        options |= MTL::ResourceStorageModeShared;
     }
 
     if (Util::TestAnyFlagSet(flags, CL_MEM_HOST_WRITE_ONLY)) {
@@ -58,11 +58,11 @@ Buffer::~Buffer() {
 }
 
 void *Buffer::Map() {
-    if (Util::TestAnyFlagSet(mMemFlags, CL_MEM_ALLOC_HOST_PTR)) {
+    if (Util::TestAnyFlagSet(mMemFlags, CL_MEM_HOST_NO_ACCESS)) {
+        return nullptr;
+    } else {
         ++mMapCount;
         return mBuffer->contents();
-    } else {
-        return nullptr;
     }
 }
 

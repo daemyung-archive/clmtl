@@ -721,14 +721,6 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
         return nullptr;
     }
 
-    if (cml::Util::TestAnyFlagSet(flags, CL_MEM_USE_HOST_PTR)) {
-        if (errcode_ret) {
-            errcode_ret[0] = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-        }
-
-        return nullptr;
-    }
-
     auto cmlContext = cml::Context::DownCast(context);
 
     if (!cmlContext) {
