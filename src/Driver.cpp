@@ -2437,7 +2437,33 @@ cl_int clEnqueueMarkerWithWaitList(cl_command_queue command_queue, cl_uint num_e
 
 cl_int clEnqueueBarrierWithWaitList(cl_command_queue command_queue, cl_uint num_events_in_wait_list,
                                     const cl_event *event_wait_list, cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
+    if (event) {
+        auto cmlEvent = cml::Event::DownCast(*event);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+    }
+
+    return CL_SUCCESS;
 }
 
 #ifdef CL_VERSION_2_0
@@ -2610,7 +2636,13 @@ cl_int clEnqueueWaitForEvents(cl_command_queue command_queue, cl_uint num_events
 }
 
 cl_int clEnqueueBarrier(cl_command_queue command_queue) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clUnloadCompiler(void) {
