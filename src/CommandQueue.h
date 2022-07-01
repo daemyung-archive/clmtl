@@ -56,6 +56,7 @@ public:
     ~CommandQueue() override;
     void EnqueueReadBuffer(Buffer *srcBuffer, size_t srcOffset, void *dstData, size_t dstSize);
     void EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, size_t offset, size_t size);
+    void EnqueueCopyBuffer(Buffer *srcBuffer, size_t srcOffset, Buffer *dstBuffer, size_t dstOffset, size_t size);
     void EnqueueReadImage(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion, void *dstData,
                           size_t dstRowPitch, size_t dstSlicePitch);
     void EnqueueWriteImage(const void *srcData, size_t srcRowPitch, size_t srcSlicePitch, const Size &srcRegion,

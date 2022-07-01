@@ -2012,7 +2012,45 @@ cl_int clEnqueueFillBuffer(cl_command_queue command_queue, cl_mem buffer, const 
 cl_int clEnqueueCopyBuffer(cl_command_queue command_queue, cl_mem src_buffer, cl_mem dst_buffer, size_t src_offset,
                            size_t dst_offset, size_t size, cl_uint num_events_in_wait_list,
                            const cl_event *event_wait_list, cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
+    auto cmlSrcBuffer = cml::Buffer::DownCast(src_buffer);
+
+    if (!cmlSrcBuffer) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    auto cmlDstBuffer = cml::Buffer::DownCast(dst_buffer);
+
+    if (!cmlDstBuffer) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    cmlCommandQueue->EnqueueCopyBuffer(cmlSrcBuffer, src_offset, cmlDstBuffer, dst_offset, size);
+
+    if (event) {
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clEnqueueCopyBufferRect(cl_command_queue command_queue, cl_mem src_buffer, cl_mem dst_buffer,

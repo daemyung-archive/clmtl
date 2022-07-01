@@ -109,6 +109,16 @@ void CommandQueue::EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, si
     });
 }
 
+void CommandQueue::EnqueueCopyBuffer(Buffer *srcBuffer, size_t srcOffset, Buffer *dstBuffer, size_t dstOffset,
+                                     size_t size) {
+    auto commandEncoder = mCommandBuffer->blitCommandEncoder();
+    assert(commandEncoder);
+
+    commandEncoder->copyFromBuffer(srcBuffer->GetBuffer(), srcOffset, dstBuffer->GetBuffer(), dstOffset, size);
+    commandEncoder->endEncoding();
+    commandEncoder->release();
+}
+
 void CommandQueue::EnqueueReadImage(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion, void *dstData,
                                     size_t dstRowPitch, size_t dstSlicePitch) {
     auto commandEncoder = mCommandBuffer->blitCommandEncoder();
