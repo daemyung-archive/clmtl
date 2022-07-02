@@ -903,15 +903,15 @@ cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_va
     switch (param_name) {
         case CL_MEM_TYPE:
             size = sizeof(cl_mem_object_type);
-            *((cl_mem_object_type *) info) = CL_MEM_OBJECT_BUFFER;
+            ((cl_mem_object_type *) info)[0] = CL_MEM_OBJECT_BUFFER;
             break;
         case CL_MEM_FLAGS:
             size = sizeof(cl_mem_flags);
-            *((cl_mem_flags *) info) = cmlBuffer->GetMemFlags();
+            ((cl_mem_flags *) info)[0] = cmlBuffer->GetMemFlags();
             break;
         case CL_MEM_SIZE:
-            size = sizeof(cl_uint);
-            *((cl_uint *) info) = cmlBuffer->GetSize();
+            size = sizeof(size_t);
+            ((size_t *) info)[0] = cmlBuffer->GetSize();
             break;
         case CL_MEM_HOST_PTR:
             size = sizeof(void *);
@@ -919,15 +919,15 @@ cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_va
             break;
         case CL_MEM_MAP_COUNT:
             size = sizeof(cl_uint);
-            *((cl_uint *) info) = cmlBuffer->GetMapCount();
+            ((cl_uint *) info)[0] = cmlBuffer->GetMapCount();
             break;
         case CL_MEM_REFERENCE_COUNT:
             size = sizeof(cl_uint);
-            *((cl_uint *) info) = cmlBuffer->GetReferenceCount();
+            ((cl_uint *) info)[0] = cmlBuffer->GetReferenceCount();
             break;
         case CL_MEM_CONTEXT:
             size = sizeof(cl_context);
-            *((cl_context *) info) = cmlBuffer->GetContext();
+            ((cl_context *) info)[0] = cmlBuffer->GetContext();
             break;
         default:
             return CL_INVALID_VALUE;
