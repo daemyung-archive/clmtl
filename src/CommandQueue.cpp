@@ -119,6 +119,26 @@ void CommandQueue::EnqueueCopyBuffer(Buffer *srcBuffer, size_t srcOffset, Buffer
     commandEncoder->release();
 }
 
+void CommandQueue::EnqueueFillBuffer(const void *srcData, size_t srcSize, Buffer *dstBuffer, size_t dstOffset,
+                                     size_t dstSize) {
+    auto commandEncoder = mCommandBuffer->blitCommandEncoder();
+    assert(commandEncoder);
+
+    auto srcBuffer = new Buffer(mContext, CL_MEM_WRITE_ONLY | CL_MEM_COPY_HOST_PTR, srcData, srcSize);
+    assert(srcBuffer);
+
+    for (size_t i = 0; i < dstSize; i += srcSize) {
+        commandEncoder->copyFromBuffer(srcBuffer->GetBuffer(), 0, dstBuffer->GetBuffer(), dstOffset + i, srcSize);
+    }
+
+    commandEncoder->endEncoding();
+    commandEncoder->release();
+    mCommandBuffer->addCompletedHandler([srcBuffer](MTL::CommandBuffer *commandBuffer) {
+        srcBuffer->Release();
+        delete srcBuffer;
+    });
+}
+
 void CommandQueue::EnqueueReadImage(Image *srcImage, const Origin &srcOrigin, const Size &srcRegion, void *dstData,
                                     size_t dstRowPitch, size_t dstSlicePitch) {
     auto commandEncoder = mCommandBuffer->blitCommandEncoder();

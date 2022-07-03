@@ -2006,7 +2006,39 @@ cl_int clEnqueueWriteBufferRect(cl_command_queue command_queue, cl_mem buffer, c
 cl_int clEnqueueFillBuffer(cl_command_queue command_queue, cl_mem buffer, const void *pattern, size_t pattern_size,
                            size_t offset, size_t size, cl_uint num_events_in_wait_list, const cl_event *event_wait_list,
                            cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    auto cmlBuffer = cml::Buffer::DownCast(buffer);
+
+    if (!cmlBuffer) {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
+    cmlCommandQueue->EnqueueFillBuffer(pattern, pattern_size, cmlBuffer, offset, size);
+
+    if (event) {
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clEnqueueCopyBuffer(cl_command_queue command_queue, cl_mem src_buffer, cl_mem dst_buffer, size_t src_offset,
