@@ -30,18 +30,23 @@ public:
 public:
     Buffer(Context *context, cl_mem_flags flags, size_t size);
     Buffer(Context *context, cl_mem_flags flags, const void *data, size_t size);
+    Buffer(Buffer *parent, cl_mem_flags flags, const cl_buffer_region *region);
     ~Buffer() override;
     void *Map() override;
     void Unmap() override;
+    Buffer *GetParent() const;
+    MTL::Heap *GetHeap() const;
     MTL::Buffer *GetBuffer() const;
     size_t GetSize() const;
 
 private:
+    Buffer *mParent;
     MTL::Heap *mHeap;
     MTL::Buffer *mBuffer;
 
     void InitHeap(size_t size);
-    void InitBuffer(size_t size);
+    void InitHeap();
+    void InitBuffer(size_t size, size_t offset);
     void InitData(const void *data, size_t size);
 };
 

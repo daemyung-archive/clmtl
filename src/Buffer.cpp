@@ -44,16 +44,22 @@ Buffer *Buffer::DownCast(cl_mem buffer) {
 }
 
 Buffer::Buffer(Context *context, cl_mem_flags flags, size_t size)
-    : Memory{context, flags}, mHeap{nullptr}, mBuffer{nullptr} {
+    : Memory{context, flags}, mParent{nullptr}, mHeap{nullptr}, mBuffer{nullptr} {
     InitHeap(size);
-    InitBuffer(size);
+    InitBuffer(size, 0);
 }
 
 Buffer::Buffer(Context *context, cl_mem_flags flags, const void *data, size_t size)
-    : Memory{context, flags}, mHeap{nullptr}, mBuffer{nullptr} {
+    : Memory{context, flags}, mParent{nullptr}, mHeap{nullptr}, mBuffer{nullptr} {
     InitHeap(size);
-    InitBuffer(size);
+    InitBuffer(size, 0);
     InitData(data, size);
+}
+
+Buffer::Buffer(Buffer *parent, cl_mem_flags flags, const cl_buffer_region *region)
+    : Memory{parent->GetContext(), flags}, mParent{parent}, mHeap{nullptr}, mBuffer{nullptr}{
+    InitHeap();
+    InitBuffer(region->size, region->origin);
 }
 
 Buffer::~Buffer() {
@@ -74,6 +80,14 @@ void Buffer::Unmap() {
     if (mMapCount) {
         --mMapCount;
     }
+}
+
+Buffer *Buffer::GetParent() const {
+    return mParent;
+}
+
+MTL::Heap *Buffer::GetHeap() const {
+    return mHeap;
 }
 
 MTL::Buffer *Buffer::GetBuffer() const {
@@ -101,8 +115,13 @@ void Buffer::InitHeap(size_t size) {
     descriptor->release();
 }
 
-void Buffer::InitBuffer(size_t size) {
-    mBuffer = mHeap->newBuffer(size, mHeap->resourceOptions(), 0);
+void Buffer::InitHeap() {
+    mHeap = mParent->GetHeap();
+    mHeap->retain();
+}
+
+void Buffer::InitBuffer(size_t size, size_t offset) {
+    mBuffer = mHeap->newBuffer(size, mHeap->resourceOptions(), offset);
     assert(mBuffer);
 }
 

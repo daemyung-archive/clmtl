@@ -749,7 +749,37 @@ cl_mem clCreateBuffer(cl_context context, cl_mem_flags flags, size_t size, void 
 
 cl_mem clCreateSubBuffer(cl_mem buffer, cl_mem_flags flags, cl_buffer_create_type buffer_create_type,
                          const void *buffer_create_info, cl_int *errcode_ret) {
-    return nullptr;
+    auto cmlBuffer = cml::Buffer::DownCast(buffer);
+
+    if (!cmlBuffer) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_MEM_OBJECT;
+        }
+
+        return nullptr;
+    }
+
+    if (buffer_create_type != CL_BUFFER_CREATE_TYPE_REGION) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_VALUE;
+        }
+
+        return nullptr;
+    }
+
+    if (!buffer_create_info) {
+        if (errcode_ret) {
+            errcode_ret[0] = CL_INVALID_VALUE;
+        }
+
+        return nullptr;
+    }
+
+    if (errcode_ret) {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+
+    return new cml::Buffer(cmlBuffer, flags, static_cast<const cl_buffer_region *>(buffer_create_info));
 }
 
 cl_mem clCreateImage(cl_context context, cl_mem_flags flags, const cl_image_format *image_format,
