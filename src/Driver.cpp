@@ -122,7 +122,8 @@ cl_int clGetDeviceIDs(cl_platform_id platform, cl_device_type device_type, cl_ui
         return CL_INVALID_VALUE;
     }
 
-    if (cml::Util::TestAnyFlagSet(device_type, CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_ACCELERATOR)) {
+    if (device_type != CL_DEVICE_TYPE_ALL &&
+        cml::Util::TestAnyFlagSet(device_type, CL_DEVICE_TYPE_CPU | CL_DEVICE_TYPE_ACCELERATOR)) {
         return CL_DEVICE_NOT_FOUND;
     }
 
