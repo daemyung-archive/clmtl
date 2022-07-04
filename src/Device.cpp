@@ -86,7 +86,7 @@ void Device::InitLimits() {
     mLimits.ImageSupport = CL_TRUE;
     mLimits.MaxParameterSize = 256;
     mLimits.MaxSamplers = mDevice->maxArgumentBufferSamplerCount();
-    mLimits.MemBaseAddrAlign = 64;
+    mLimits.MemBaseAddrAlign = 4096 << 3;
     mLimits.MinDataTypeAlignSize = 128;
     mLimits.SingleFpConfig = CL_FP_ROUND_TO_NEAREST | CL_FP_INF_NAN;
     mLimits.GlobalMemCacheType = 0;
