@@ -35,14 +35,24 @@ struct _cl_mem {
 
 namespace cml {
 
+class Context;
+
 class Memory : public _cl_mem, public Object {
 public:
     static Memory *DownCast(cl_mem memory);
 
 public:
-    Memory();
+    explicit Memory(Context *context, cl_mem_flags flags);
     virtual void *Map() = 0;
     virtual void Unmap() = 0;
+    Context *GetContext() const;
+    cl_mem_flags GetFlags() const;
+    cl_uint GetMapCount() const;
+
+protected:
+    Context *mContext;
+    cl_mem_flags mFlags;
+    cl_uint mMapCount;
 };
 
 } //namespace cml

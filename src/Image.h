@@ -23,20 +23,16 @@
 
 namespace cml {
 
-class Context;
-
 class Image : public Memory {
 public:
     static Image *DownCast(cl_mem image);
 
 public:
-    Image(Context *context, cl_mem_flags memFlags, const cl_image_format &format, cl_mem_object_type type, size_t width,
+    Image(Context *context, cl_mem_flags flags, const cl_image_format &format, cl_mem_object_type type, size_t width,
           size_t height, size_t depth);
     ~Image() override;
     void *Map() override;
     void Unmap() override;
-    Context *GetContext() const;
-    cl_mem_flags GetMemFlags() const;
     cl_image_format GetFormat() const;
     cl_mem_object_type GetType() const;
     size_t GetWidth() const;
@@ -45,8 +41,6 @@ public:
     MTL::Texture *GetTexture() const;
 
 private:
-    Context *mContext;
-    cl_mem_flags mMemFlags;
     cl_image_format mFormat;
     cl_mem_object_type mType;
     size_t mWidth;

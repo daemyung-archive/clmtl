@@ -907,7 +907,7 @@ cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_va
             break;
         case CL_MEM_FLAGS:
             size = sizeof(cl_mem_flags);
-            ((cl_mem_flags *) info)[0] = cmlBuffer->GetMemFlags();
+            ((cl_mem_flags *) info)[0] = cmlBuffer->GetFlags();
             break;
         case CL_MEM_SIZE:
             size = sizeof(size_t);

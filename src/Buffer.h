@@ -23,8 +23,6 @@
 
 namespace cml {
 
-class Context;
-
 class Buffer : public Memory {
 public:
     static Buffer *DownCast(cl_mem buffer);
@@ -35,20 +33,16 @@ public:
     ~Buffer() override;
     void *Map() override;
     void Unmap() override;
-    Context *GetContext() const;
-    cl_mem_flags GetMemFlags() const;
     MTL::Buffer *GetBuffer() const;
     size_t GetSize() const;
-    cl_uint GetMapCount() const;
 
 private:
-    Context *mContext;
-    cl_mem_flags mMemFlags;
+    MTL::Heap *mHeap;
     MTL::Buffer *mBuffer;
-    cl_uint mMapCount;
 
+    void InitHeap(size_t size);
     void InitBuffer(size_t size);
-    void InitBuffer(const void *data, size_t size);
+    void InitData(const void *data, size_t size);
 };
 
 } //namespace cml

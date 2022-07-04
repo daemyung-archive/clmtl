@@ -23,8 +23,8 @@
 
 namespace cml {
 
-MTL::ResourceOptions convertToResourceOptions(cl_mem_flags flags) {
-    MTL::ResourceOptions options = 0;
+static MTL::ResourceOptions convertToResourceOptions(cl_mem_flags flags) {
+    MTL::ResourceOptions options = MTL::ResourceHazardTrackingModeTracked;
 
     if (Util::TestAnyFlagSet(flags, CL_MEM_HOST_NO_ACCESS)) {
         options |= MTL::ResourceStorageModePrivate;
@@ -44,21 +44,25 @@ Buffer *Buffer::DownCast(cl_mem buffer) {
 }
 
 Buffer::Buffer(Context *context, cl_mem_flags flags, size_t size)
-    : Memory{}, mContext{context}, mMemFlags{flags}, mBuffer{nullptr}, mMapCount{0} {
+    : Memory{context, flags}, mHeap{nullptr}, mBuffer{nullptr} {
+    InitHeap(size);
     InitBuffer(size);
 }
 
 Buffer::Buffer(Context *context, cl_mem_flags flags, const void *data, size_t size)
-    : Memory{}, mContext{context}, mMemFlags{flags}, mBuffer{nullptr}, mMapCount{0} {
-    InitBuffer(data, size);
+    : Memory{context, flags}, mHeap{nullptr}, mBuffer{nullptr} {
+    InitHeap(size);
+    InitBuffer(size);
+    InitData(data, size);
 }
 
 Buffer::~Buffer() {
     mBuffer->release();
+    mHeap->release();
 }
 
 void *Buffer::Map() {
-    if (Util::TestAnyFlagSet(mMemFlags, CL_MEM_HOST_NO_ACCESS)) {
+    if (Util::TestAnyFlagSet(mFlags, CL_MEM_HOST_NO_ACCESS)) {
         return nullptr;
     } else {
         ++mMapCount;
@@ -72,14 +76,6 @@ void Buffer::Unmap() {
     }
 }
 
-Context *Buffer::GetContext() const {
-    return mContext;
-}
-
-cl_mem_flags Buffer::GetMemFlags() const {
-    return mMemFlags;
-}
-
 MTL::Buffer *Buffer::GetBuffer() const {
     return mBuffer;
 }
@@ -88,24 +84,30 @@ size_t Buffer::GetSize() const {
     return mBuffer->length();
 }
 
-cl_uint Buffer::GetMapCount() const {
-    return mMapCount;
+void Buffer::InitHeap(size_t size) {
+    auto descriptor = MTL::HeapDescriptor::alloc()->init();
+    assert(descriptor);
+
+    descriptor->setSize(size);
+    descriptor->setResourceOptions(convertToResourceOptions(mFlags));
+    descriptor->setType(MTL::HeapTypePlacement);
+
+    auto device = mContext->GetDevice();
+    assert(device);
+
+    mHeap = device->GetDevice()->newHeap(descriptor);
+    assert(mHeap);
+
+    descriptor->release();
 }
 
 void Buffer::InitBuffer(size_t size) {
-    auto device = mContext->GetDevice();
-    assert(device);
-
-    mBuffer = device->GetDevice()->newBuffer(size, convertToResourceOptions(mMemFlags));
+    mBuffer = mHeap->newBuffer(size, mHeap->resourceOptions(), 0);
     assert(mBuffer);
 }
 
-void Buffer::InitBuffer(const void *data, size_t size) {
-    auto device = mContext->GetDevice();
-    assert(device);
-
-    mBuffer = device->GetDevice()->newBuffer(data, size, convertToResourceOptions(mMemFlags));
-    assert(mBuffer);
+void Buffer::InitData(const void *data, size_t size) {
+    memcpy(mBuffer->contents(), data, size);
 }
 
 } //namespace cml

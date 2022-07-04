@@ -119,9 +119,9 @@ Image *Image::DownCast(cl_mem image) {
     return (Image *) image;
 }
 
-Image::Image(Context *context, cl_mem_flags memFlags, const cl_image_format &format, cl_mem_object_type type,
+Image::Image(Context *context, cl_mem_flags flags, const cl_image_format &format, cl_mem_object_type type,
              size_t width, size_t height, size_t depth)
-    : Memory{}, mContext{context}, mMemFlags{memFlags}, mFormat{format} , mType{type}, mWidth{width}, mHeight{height}
+    : Memory{context, flags}, mFormat{format} , mType{type}, mWidth{width}, mHeight{height}
     , mDepth{depth}, mTexture{nullptr} {
     InitTexture();
 }
@@ -135,14 +135,6 @@ void *Image::Map() {
 }
 
 void Image::Unmap() {
-}
-
-Context *Image::GetContext() const {
-    return mContext;
-}
-
-cl_mem_flags Image::GetMemFlags() const {
-    return mMemFlags;
 }
 
 cl_image_format Image::GetFormat() const {
@@ -179,7 +171,7 @@ void Image::InitTexture() {
     descriptor->setHeight(mHeight);
     descriptor->setDepth(mDepth);
     descriptor->setResourceOptions(MTL::ResourceStorageModePrivate);
-    descriptor->setUsage(ConvertToTextureUsage(mMemFlags));
+    descriptor->setUsage(ConvertToTextureUsage(mFlags));
 
     mTexture = Device::GetSingleton()->GetDevice()->newTexture(descriptor);
     assert(mTexture);

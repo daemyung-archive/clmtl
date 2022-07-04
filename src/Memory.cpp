@@ -24,8 +24,20 @@ Memory *Memory::DownCast(cl_mem memory) {
     return (Memory *) memory;
 }
 
-Memory::Memory()
-    : _cl_mem{Dispatch::GetTable()}, Object{} {
+Memory::Memory(Context *context, cl_mem_flags flags)
+    : _cl_mem{Dispatch::GetTable()}, Object{}, mContext{context}, mFlags{flags}, mMapCount{0} {
+}
+
+Context *Memory::GetContext() const {
+    return mContext;
+}
+
+cl_mem_flags Memory::GetFlags() const {
+    return mFlags;
+}
+
+cl_uint Memory::GetMapCount() const {
+    return mMapCount;
 }
 
 } //namespace cml
