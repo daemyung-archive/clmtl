@@ -2174,6 +2174,14 @@ cl_int clEnqueueReadImage(cl_command_queue command_queue, cl_mem image, cl_bool 
     cmlCommandQueue->EnqueueReadImage(cmlImage, {origin[0], origin[1], origin[2]}, {region[0], region[1], region[2]},
                                       ptr, row_pitch, slice_pitch);
 
+    if (event) {
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
+    }
+
     if (blocking_read) {
         cmlCommandQueue->Flush();
         cmlCommandQueue->WaitIdle();
@@ -2227,6 +2235,14 @@ cl_int clEnqueueWriteImage(cl_command_queue command_queue, cl_mem image, cl_bool
 
     cmlCommandQueue->EnqueueWriteImage(ptr, input_row_pitch, input_slice_pitch, {region[0], region[1], region[2]},
                                        cmlImage, {origin[0], origin[1], origin[2]});
+
+    if (event) {
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
+    }
 
     if (blocking_write) {
         cmlCommandQueue->Flush();
@@ -2459,6 +2475,14 @@ cl_int clEnqueueUnmapMemObject(cl_command_queue command_queue, cl_mem memobj, vo
     }
 
     cmlMemory->Unmap();
+
+    if (event) {
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
+    }
 
     return CL_SUCCESS;
 }
