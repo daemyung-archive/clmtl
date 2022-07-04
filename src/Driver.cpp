@@ -926,9 +926,9 @@ cl_int clGetSupportedImageFormats(cl_context context, cl_mem_flags flags, cl_mem
 
 cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_value_size, void *param_value,
                           size_t *param_value_size_ret) {
-    auto cmlBuffer = cml::Buffer::DownCast(memobj);
+    auto cmlMemory = cml::Memory::DownCast(memobj);
 
-    if (!cmlBuffer) {
+    if (!cmlMemory) {
         return CL_INVALID_MEM_OBJECT;
     }
 
@@ -938,15 +938,15 @@ cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_va
     switch (param_name) {
         case CL_MEM_TYPE:
             size = sizeof(cl_mem_object_type);
-            ((cl_mem_object_type *) info)[0] = CL_MEM_OBJECT_BUFFER;
+            ((cl_mem_object_type *) info)[0] = cmlMemory->GetType();
             break;
         case CL_MEM_FLAGS:
             size = sizeof(cl_mem_flags);
-            ((cl_mem_flags *) info)[0] = cmlBuffer->GetFlags();
+            ((cl_mem_flags *) info)[0] = cmlMemory->GetFlags();
             break;
         case CL_MEM_SIZE:
             size = sizeof(size_t);
-            ((size_t *) info)[0] = cmlBuffer->GetSize();
+            ((size_t *) info)[0] = cmlMemory->GetSize();
             break;
         case CL_MEM_HOST_PTR:
             size = sizeof(void *);
@@ -954,15 +954,15 @@ cl_int clGetMemObjectInfo(cl_mem memobj, cl_mem_info param_name, size_t param_va
             break;
         case CL_MEM_MAP_COUNT:
             size = sizeof(cl_uint);
-            ((cl_uint *) info)[0] = cmlBuffer->GetMapCount();
+            ((cl_uint *) info)[0] = cmlMemory->GetMapCount();
             break;
         case CL_MEM_REFERENCE_COUNT:
             size = sizeof(cl_uint);
-            ((cl_uint *) info)[0] = cmlBuffer->GetReferenceCount();
+            ((cl_uint *) info)[0] = cmlMemory->GetReferenceCount();
             break;
         case CL_MEM_CONTEXT:
             size = sizeof(cl_context);
-            ((cl_context *) info)[0] = cmlBuffer->GetContext();
+            ((cl_context *) info)[0] = cmlMemory->GetContext();
             break;
         default:
             return CL_INVALID_VALUE;
@@ -2416,17 +2416,11 @@ void *clEnqueueMapBuffer(cl_command_queue command_queue, cl_mem buffer, cl_bool 
     }
 
     if (event) {
-        auto cmlEvent = cml::Event::DownCast(*event);
-
-        if (!cmlEvent) {
-            if (errcode_ret) {
-                errcode_ret[0] = CL_INVALID_EVENT;
-            }
-
-            return nullptr;
-        }
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
 
         cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
     }
 
     if (blocking_map) {
@@ -2489,13 +2483,11 @@ cl_int clEnqueueMigrateMemObjects(cl_command_queue command_queue, cl_uint num_me
     }
 
     if (event) {
-        auto cmlEvent = cml::Event::DownCast(*event);
-
-        if (!cmlEvent) {
-            return CL_INVALID_EVENT;
-        }
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
 
         cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
     }
 
     return CL_SUCCESS;
@@ -2543,13 +2535,11 @@ cl_int clEnqueueNDRangeKernel(cl_command_queue command_queue, cl_kernel kernel, 
     }
 
     if (event) {
-        auto cmlEvent = cml::Event::DownCast(*event);
-
-        if (!cmlEvent) {
-            return CL_INVALID_EVENT;
-        }
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
 
         cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
     }
 
     return CL_SUCCESS;
@@ -2585,13 +2575,11 @@ cl_int clEnqueueBarrierWithWaitList(cl_command_queue command_queue, cl_uint num_
     }
 
     if (event) {
-        auto cmlEvent = cml::Event::DownCast(*event);
-
-        if (!cmlEvent) {
-            return CL_INVALID_EVENT;
-        }
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
 
         cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
     }
 
     return CL_SUCCESS;
@@ -2869,13 +2857,11 @@ cl_int clEnqueueTask(cl_command_queue command_queue, cl_kernel kernel, cl_uint n
     cmlCommandQueue->EnqueueDispatch(cmlKernel, {1, 1, 1}, {1, 1, 1});
 
     if (event) {
-        auto cmlEvent = cml::Event::DownCast(*event);
-
-        if (!cmlEvent) {
-            return CL_INVALID_EVENT;
-        }
+        auto cmlEvent = new cml::Event(cmlCommandQueue);
+        assert(cmlEvent);
 
         cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+        event[0] = cmlEvent;
     }
 
     return CL_SUCCESS;

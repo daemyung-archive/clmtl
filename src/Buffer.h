@@ -37,7 +37,6 @@ public:
     Buffer *GetParent() const;
     MTL::Heap *GetHeap() const;
     MTL::Buffer *GetBuffer() const;
-    size_t GetSize() const;
 
 private:
     Buffer *mParent;

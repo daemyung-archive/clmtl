@@ -34,7 +34,6 @@ public:
     void *Map() override;
     void Unmap() override;
     cl_image_format GetFormat() const;
-    cl_mem_object_type GetType() const;
     size_t GetWidth() const;
     size_t GetHeight() const;
     size_t GetDepth() const;
@@ -42,7 +41,6 @@ public:
 
 private:
     cl_image_format mFormat;
-    cl_mem_object_type mType;
     size_t mWidth;
     size_t mHeight;
     size_t mDepth;

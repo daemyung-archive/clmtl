@@ -121,8 +121,7 @@ Image *Image::DownCast(cl_mem image) {
 
 Image::Image(Context *context, cl_mem_flags flags, const cl_image_format &format, cl_mem_object_type type,
              size_t width, size_t height, size_t depth)
-    : Memory{context, flags}, mFormat{format} , mType{type}, mWidth{width}, mHeight{height}
-    , mDepth{depth}, mTexture{nullptr} {
+    : Memory{context, flags, type}, mFormat{format}, mWidth{width}, mHeight{height}, mDepth{depth}, mTexture{nullptr} {
     InitTexture();
 }
 
@@ -139,10 +138,6 @@ void Image::Unmap() {
 
 cl_image_format Image::GetFormat() const {
     return mFormat;
-}
-
-cl_mem_object_type Image::GetType() const {
-    return mType;
 }
 
 size_t Image::GetWidth() const {
@@ -175,6 +170,7 @@ void Image::InitTexture() {
 
     mTexture = Device::GetSingleton()->GetDevice()->newTexture(descriptor);
     assert(mTexture);
+    mSize = mTexture->allocatedSize();
 
     descriptor->release();
 }

@@ -24,8 +24,8 @@ Memory *Memory::DownCast(cl_mem memory) {
     return (Memory *) memory;
 }
 
-Memory::Memory(Context *context, cl_mem_flags flags)
-    : _cl_mem{Dispatch::GetTable()}, Object{}, mContext{context}, mFlags{flags}, mMapCount{0} {
+Memory::Memory(Context *context, cl_mem_flags flags, cl_mem_object_type type)
+    : _cl_mem{Dispatch::GetTable()}, Object{}, mContext{context}, mFlags{flags}, mType{type}, mSize{0}, mMapCount{0} {
 }
 
 Context *Memory::GetContext() const {
@@ -34,6 +34,14 @@ Context *Memory::GetContext() const {
 
 cl_mem_flags Memory::GetFlags() const {
     return mFlags;
+}
+
+cl_mem_object_type Memory::GetType() const {
+    return mType;
+}
+
+size_t Memory::GetSize() const {
+    return mSize;
 }
 
 cl_uint Memory::GetMapCount() const {

@@ -42,16 +42,20 @@ public:
     static Memory *DownCast(cl_mem memory);
 
 public:
-    explicit Memory(Context *context, cl_mem_flags flags);
+    explicit Memory(Context *context, cl_mem_flags flags, cl_mem_object_type type);
     virtual void *Map() = 0;
     virtual void Unmap() = 0;
     Context *GetContext() const;
     cl_mem_flags GetFlags() const;
+    cl_mem_object_type GetType() const;
+    size_t GetSize() const;
     cl_uint GetMapCount() const;
 
 protected:
     Context *mContext;
     cl_mem_flags mFlags;
+    cl_mem_object_type mType;
+    size_t mSize;
     cl_uint mMapCount;
 };
 

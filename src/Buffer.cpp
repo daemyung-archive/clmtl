@@ -16,7 +16,6 @@
 
 #include "Buffer.h"
 
-#include "Dispatch.h"
 #include "Util.h"
 #include "Context.h"
 #include "Device.h"
@@ -44,20 +43,20 @@ Buffer *Buffer::DownCast(cl_mem buffer) {
 }
 
 Buffer::Buffer(Context *context, cl_mem_flags flags, size_t size)
-    : Memory{context, flags}, mParent{nullptr}, mHeap{nullptr}, mBuffer{nullptr} {
+    : Memory{context, flags, CL_MEM_OBJECT_BUFFER}, mParent{nullptr}, mHeap{nullptr}, mBuffer{nullptr} {
     InitHeap(size);
     InitBuffer(size, 0);
 }
 
 Buffer::Buffer(Context *context, cl_mem_flags flags, const void *data, size_t size)
-    : Memory{context, flags}, mParent{nullptr}, mHeap{nullptr}, mBuffer{nullptr} {
+    : Memory{context, flags, CL_MEM_OBJECT_BUFFER}, mParent{nullptr}, mHeap{nullptr}, mBuffer{nullptr} {
     InitHeap(size);
     InitBuffer(size, 0);
     InitData(data, size);
 }
 
 Buffer::Buffer(Buffer *parent, cl_mem_flags flags, const cl_buffer_region *region)
-    : Memory{parent->GetContext(), flags}, mParent{parent}, mHeap{nullptr}, mBuffer{nullptr}{
+    : Memory{parent->GetContext(), flags, CL_MEM_OBJECT_BUFFER}, mParent{parent}, mHeap{nullptr}, mBuffer{nullptr} {
     InitHeap();
     InitBuffer(region->size, region->origin);
 }
@@ -94,10 +93,6 @@ MTL::Buffer *Buffer::GetBuffer() const {
     return mBuffer;
 }
 
-size_t Buffer::GetSize() const {
-    return mBuffer->length();
-}
-
 void Buffer::InitHeap(size_t size) {
     auto descriptor = MTL::HeapDescriptor::alloc()->init();
     assert(descriptor);
@@ -123,6 +118,7 @@ void Buffer::InitHeap() {
 void Buffer::InitBuffer(size_t size, size_t offset) {
     mBuffer = mHeap->newBuffer(size, mHeap->resourceOptions(), offset);
     assert(mBuffer);
+    mSize = mBuffer->allocatedSize();
 }
 
 void Buffer::InitData(const void *data, size_t size) {
