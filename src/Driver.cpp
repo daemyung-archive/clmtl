@@ -2472,7 +2472,33 @@ cl_int clEnqueueUnmapMemObject(cl_command_queue command_queue, cl_mem memobj, vo
 cl_int clEnqueueMigrateMemObjects(cl_command_queue command_queue, cl_uint num_mem_objects, const cl_mem *mem_objects,
                                   cl_mem_migration_flags flags, cl_uint num_events_in_wait_list,
                                   const cl_event *event_wait_list, cl_event *event) {
-    return CL_INVALID_COMMAND_QUEUE;
+    auto cmlCommandQueue = cml::CommandQueue::DownCast(command_queue);
+
+    if (!cmlCommandQueue) {
+        return CL_INVALID_COMMAND_QUEUE;
+    }
+
+    for (auto i = 0; i != num_events_in_wait_list; ++i) {
+        auto cmlEvent = cml::Event::DownCast(event_wait_list[i]);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueWaitEvent(cmlEvent);
+    }
+
+    if (event) {
+        auto cmlEvent = cml::Event::DownCast(*event);
+
+        if (!cmlEvent) {
+            return CL_INVALID_EVENT;
+        }
+
+        cmlCommandQueue->EnqueueSignalEvent(cmlEvent);
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_int clEnqueueNDRangeKernel(cl_command_queue command_queue, cl_kernel kernel, cl_uint work_dim,
