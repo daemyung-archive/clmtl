@@ -399,6 +399,10 @@ cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t pa
             info = limits.CVersion.data();
             size = limits.CVersion.size() + 1;
             break;
+        case CL_DEVICE_PARTITION_AFFINITY_DOMAIN:
+            info = &limits.PartitionAffinityDomain;
+            size = sizeof(cl_device_affinity_domain);
+            break;
         default:
             return CL_INVALID_VALUE;
     }

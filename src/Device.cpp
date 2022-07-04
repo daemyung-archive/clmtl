@@ -123,6 +123,7 @@ void Device::InitLimits() {
     mLimits.NativeVectorWidthDouble = 8;
     mLimits.NativeVectorWidthHalf = 2;
     mLimits.CVersion = "OpenCL C 1.0";
+    mLimits.PartitionAffinityDomain = 0;
 }
 
 void Device::InitSupportedPixelFormats() {

@@ -101,6 +101,7 @@ struct DeviceLimits {
     cl_uint NativeVectorWidthDouble;
     cl_uint NativeVectorWidthHalf;
     std::string CVersion;
+    cl_device_affinity_domain PartitionAffinityDomain;
 };
 
 class Device : public _cl_device_id {
