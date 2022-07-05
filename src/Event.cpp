@@ -62,6 +62,18 @@ void Event::SetCallback(cl_int type, std::function<void (cl_int)> callback) {
     mCallbacks[type] = std::move(callback);
 }
 
+Context *Event::GetContext() const {
+    return mContext;
+}
+
+CommandQueue *Event::GetCommandQueue() const {
+    return mCommandQueue;
+}
+
+cl_int Event::GetStatus() const {
+    return mStatus;
+}
+
 MTL::Event *Event::GetEvent() const {
     return mEvent;
 }

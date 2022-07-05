@@ -44,6 +44,9 @@ public:
     void WaitComplete() const;
     void SetStatus(cl_int status);
     void SetCallback(cl_int type, std::function<void (cl_int)> callback);
+    Context *GetContext() const;
+    CommandQueue *GetCommandQueue() const;
+    cl_int GetStatus() const;
     MTL::Event *GetEvent() const;
 
 private:

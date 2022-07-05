@@ -1797,7 +1797,53 @@ cl_int clWaitForEvents(cl_uint num_events, const cl_event *event_list) {
 
 cl_int clGetEventInfo(cl_event event, cl_event_info param_name, size_t param_value_size, void *param_value,
                       size_t *param_value_size_ret) {
-    return CL_INVALID_EVENT;
+    auto cmlEvent = cml::Event::DownCast(event);
+
+    if (!cmlEvent) {
+        return CL_INVALID_EVENT;
+    }
+
+    size_t size;
+    uint8_t info[2048];
+
+    switch (param_name) {
+        case CL_EVENT_COMMAND_QUEUE:
+            size = sizeof(cl_command_queue);
+            ((cl_command_queue *) info)[0] = cmlEvent->GetCommandQueue();
+            break;
+        case CL_EVENT_CONTEXT:
+            size = sizeof(cl_context);
+            ((cl_context *) info)[0] = cmlEvent->GetContext();
+            break;
+        case CL_EVENT_COMMAND_TYPE:
+            size = sizeof(cl_command_type);
+            ((cl_command_type *) info)[0] = 0;
+            break;
+        case CL_EVENT_COMMAND_EXECUTION_STATUS:
+            size = sizeof(cl_int);
+            ((cl_int *) info)[0] = cmlEvent->GetStatus();
+            break;
+        case CL_EVENT_REFERENCE_COUNT:
+            size = sizeof(cl_uint);
+            ((cl_uint *) info)[0] = cmlEvent->GetReferenceCount();
+            break;
+        default:
+            return CL_INVALID_VALUE;
+    }
+
+    if (param_value) {
+        if (param_value_size < size) {
+            return CL_INVALID_VALUE;
+        } else {
+            memcpy(param_value, info, size);
+        }
+    }
+
+    if (param_value_size_ret) {
+        param_value_size_ret[0] = size;
+    }
+
+    return CL_SUCCESS;
 }
 
 cl_event clCreateUserEvent(cl_context context, cl_int *errcode_ret) {
