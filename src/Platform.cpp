@@ -30,7 +30,7 @@ Platform *Platform::DownCast(_cl_platform_id *platform) {
 }
 
 std::string Platform::GetProfile() {
-    return "FULL_PROFILE";
+    return "EMBEDDED_PROFILE";
 }
 
 std::string Platform::GetVersion() {
