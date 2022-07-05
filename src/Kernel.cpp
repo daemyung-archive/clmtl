@@ -32,45 +32,51 @@ void KeepResourceBindings(spirv_cross::CompilerMSL &compiler) {
     const auto stage = compiler.get_execution_model();
 
     for (const auto &resource : resources.uniform_buffers) {
+        auto descSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
-        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
-                                              .msl_texture = binding, .msl_sampler = binding});
+        compiler.add_msl_resource_binding({.stage = stage, .desc_set = descSet, .binding = binding,
+                                           .msl_buffer = binding, .msl_texture = binding, .msl_sampler = binding});
     }
 
     for (const auto &resource : resources.storage_buffers) {
+        auto descSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
-        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
-                                              .msl_texture = binding, .msl_sampler = binding});
+        compiler.add_msl_resource_binding({.stage = stage, .desc_set = descSet, .binding = binding,
+                                           .msl_buffer = binding, .msl_texture = binding, .msl_sampler = binding});
     }
 
     for (const auto &resource : resources.storage_images) {
+        auto descSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
-        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
-                                              .msl_texture = binding, .msl_sampler = binding});
+        compiler.add_msl_resource_binding({.stage = stage, .desc_set = descSet, .binding = binding,
+                                           .msl_buffer = binding, .msl_texture = binding, .msl_sampler = binding});
     }
 
     for (auto &resource : resources.sampled_images) {
+        auto descSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
-        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
-                                              .msl_texture = binding, .msl_sampler = binding});
+        compiler.add_msl_resource_binding({.stage = stage, .desc_set = descSet, .binding = binding,
+                                           .msl_buffer = binding, .msl_texture = binding, .msl_sampler = binding});
     }
 
     for (auto &resource : resources.separate_images) {
+        auto descSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
-        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
-                                              .msl_texture = binding, .msl_sampler = binding});
+        compiler.add_msl_resource_binding({.stage = stage, .desc_set = descSet, .binding = binding,
+                                           .msl_buffer = binding, .msl_texture = binding, .msl_sampler = binding});
     }
 
     for (const auto &resource : resources.separate_samplers) {
+        auto descSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         auto binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
-        compiler.add_msl_resource_binding({.stage = stage, .binding = binding, .msl_buffer = binding,
-                                              .msl_texture = binding, .msl_sampler = binding});
+        compiler.add_msl_resource_binding({.stage = stage, .desc_set = descSet, .binding = binding,
+                                           .msl_buffer = binding, .msl_texture = binding, .msl_sampler = binding});
     }
 }
 
