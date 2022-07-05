@@ -109,7 +109,7 @@ void Device::InitLimits() {
     mLimits.DriverVersion = "0.1";
     mLimits.Profile = Platform::GetProfile();
     mLimits.Version = Platform::GetVersion();
-    mLimits.Extensions = "";
+    mLimits.Extensions = "cl_khr_fp16 cles_khr_int64";
     mLimits.Platform = Platform::GetSingleton();
     mLimits.DoubleFpConfig = CL_FP_FMA | CL_FP_ROUND_TO_NEAREST | CL_FP_ROUND_TO_ZERO | CL_FP_ROUND_TO_INF |
                              CL_FP_INF_NAN | CL_FP_DENORM;
