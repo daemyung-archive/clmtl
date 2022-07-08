@@ -28,6 +28,12 @@ auto ConvertToTextureType(cl_mem_object_type type) {
             return MTL::TextureType2D;
         case CL_MEM_OBJECT_IMAGE3D:
             return MTL::TextureType3D;
+        case CL_MEM_OBJECT_IMAGE2D_ARRAY:
+            return MTL::TextureType2DArray;
+        case CL_MEM_OBJECT_IMAGE1D:
+            return MTL::TextureType1D;
+        case CL_MEM_OBJECT_IMAGE1D_ARRAY:
+            return MTL::TextureType1DArray;
         default:
             throw std::exception();
     }
