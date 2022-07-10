@@ -77,6 +77,37 @@ clspv::ArgKind ConvertToArgKind(uint32_t instruction) {
     }
 }
 
+clspv::PushConstant ConvertToPushConstant(uint32_t instruction) {
+    switch (static_cast<ExtInst>(instruction)) {
+        case ExtInst::PushConstantGlobalOffset:
+            return clspv::PushConstant::GlobalOffset;
+        case ExtInst::PushConstantEnqueuedLocalSize:
+            return clspv::PushConstant::EnqueuedLocalSize;
+        case ExtInst::PushConstantGlobalSize:
+            return clspv::PushConstant::GlobalSize;
+        case ExtInst::PushConstantRegionOffset:
+            return clspv::PushConstant::RegionOffset;
+        case ExtInst::PushConstantNumWorkgroups:
+            return clspv::PushConstant::NumWorkgroups;
+        case ExtInst::PushConstantRegionGroupOffset:
+            return clspv::PushConstant::RegionGroupOffset;
+        default:
+            throw std::exception();
+    }
+}
+
+clspv::SamplerNormalizedCoords ConvertToSamplerNormalizedCoords(uint32_t mask) {
+    return static_cast<clspv::SamplerNormalizedCoords>(mask & clspv::kSamplerNormalizedCoordsMask);
+}
+
+clspv::SamplerAddressingMode ConvertToSamplerAddressingMode(uint32_t mask) {
+    return static_cast<clspv::SamplerAddressingMode>(mask & clspv::kSamplerAddressMask);
+}
+
+clspv::SamplerFilterMode ConvertToSamplerFilteringMode(uint32_t mask) {
+    return static_cast<clspv::SamplerFilterMode>(mask & clspv::kSamplerFilterMask);
+}
+
 bool IsNonSemanticClspvReflection(const spv_parsed_instruction_t *inst) {
     return inst->ext_inst_type == SPV_EXT_INST_TYPE_NONSEMANTIC_CLSPVREFLECTION;
 }
@@ -87,7 +118,7 @@ public:
         : mContext{env}, mIntId{0}, mConstants{}, mStrings{}, mReflection{} {
     }
 
-    std::unordered_map<std::string, std::vector<Binding>> Parse(const std::vector<uint32_t> &binary) {
+    Reflection Parse(const std::vector<uint32_t> &binary) {
         if (spvBinaryParse(mContext.CContext(), this, binary.data(), binary.size(), nullptr, Parse,
                            nullptr) == SPV_SUCCESS) {
             return mReflection;
@@ -106,7 +137,7 @@ private:
     uint32_t mIntId;
     std::unordered_map<uint32_t, std::string> mStrings;
     std::unordered_map<uint32_t, uint32_t> mConstants;
-    std::unordered_map<std::string, std::vector<Binding>> mReflection;
+    Reflection mReflection;
 
     void ParseTypeInt(const spv_parsed_instruction_t *inst) {
         if (inst->words[inst->operands[1].offset] == 32 &&
@@ -133,32 +164,32 @@ private:
         mStrings[inst->result_id] = mStrings[inst->words[inst->operands[4].offset]];
     }
 
-    void ParseArgKindKernelOrdinalBinding(const spv_parsed_instruction_t *inst) {
-        Binding binding{
+    void ParseArgumentKindKernelOrdinalBinding(const spv_parsed_instruction_t *inst) {
+        Argument binding{
             .Kernel = mStrings[inst->words[inst->operands[4].offset]],
             .Ordinal = mConstants[inst->words[inst->operands[5].offset]],
             .Kind = ConvertToArgKind(inst->words[inst->operands[3].offset]),
-            .Index = mConstants[inst->words[inst->operands[7].offset]],
+            .Binding = mConstants[inst->words[inst->operands[7].offset]],
         };
 
-        mReflection[binding.Kernel].push_back(binding);
+        mReflection.Arguments[binding.Kernel].push_back(binding);
     }
 
-    void ParseArgKindKernelOrdinalBindingOffsetSize(const spv_parsed_instruction_t *inst) {
-        Binding binding{
+    void ParseArgumentKindKernelOrdinalBindingOffsetSize(const spv_parsed_instruction_t *inst) {
+        Argument binding{
             .Kernel = mStrings[inst->words[inst->operands[4].offset]],
             .Ordinal = mConstants[inst->words[inst->operands[5].offset]],
             .Kind = ConvertToArgKind(inst->words[inst->operands[3].offset]),
-            .Index = mConstants[inst->words[inst->operands[7].offset]],
+            .Binding = mConstants[inst->words[inst->operands[7].offset]],
             .Size = mConstants[inst->words[inst->operands[9].offset]],
             .Offset = mConstants[inst->words[inst->operands[8].offset]],
         };
 
-        mReflection[binding.Kernel].push_back(binding);
+        mReflection.Arguments[binding.Kernel].push_back(binding);
     }
 
-    void ParseArgKindKernelOrdinalOffsetSize(const spv_parsed_instruction_t *inst) {
-        Binding binding{
+    void ParseArgumentKindKernelOrdinalOffsetSize(const spv_parsed_instruction_t *inst) {
+        Argument binding{
             .Kernel = mStrings[inst->words[inst->operands[4].offset]],
             .Ordinal = mConstants[inst->words[inst->operands[5].offset]],
             .Kind = ConvertToArgKind(inst->words[inst->operands[3].offset]),
@@ -166,11 +197,11 @@ private:
             .Offset = mConstants[inst->words[inst->operands[7].offset]],
         };
 
-        mReflection[binding.Kernel].push_back(binding);
+        mReflection.Arguments[binding.Kernel].push_back(binding);
     }
 
-    void ParseArgKindKernelOrdinalSizeSpec(const spv_parsed_instruction_t *inst) {
-        Binding binding{
+    void ParseArgumentKindKernelOrdinalSizeSpec(const spv_parsed_instruction_t *inst) {
+        Argument binding{
             .Kernel = mStrings[inst->words[inst->operands[4].offset]],
             .Ordinal = mConstants[inst->words[inst->operands[5].offset]],
             .Kind = ConvertToArgKind(inst->words[inst->operands[3].offset]),
@@ -178,7 +209,64 @@ private:
             .Spec = mConstants[inst->words[inst->operands[6].offset]]
         };
 
-        mReflection[binding.Kernel].push_back(binding);
+        mReflection.Arguments[binding.Kernel].push_back(binding);
+    }
+
+    void ParseLiteralDescSetBindingMask(const spv_parsed_instruction_t *inst) {
+        LiteralSampler literalSampler {
+            .DescSet = mConstants[inst->words[inst->operands[4].offset]],
+            .Binding = mConstants[inst->words[inst->operands[5].offset]],
+            .NormalizedCoords = ConvertToSamplerNormalizedCoords(mConstants[inst->words[inst->operands[6].offset]]),
+            .AddressingMode = ConvertToSamplerAddressingMode(mConstants[inst->words[inst->operands[6].offset]]),
+            .FilterMode = ConvertToSamplerFilteringMode(mConstants[inst->words[inst->operands[6].offset]])
+        };
+
+        mReflection.LiteralSamplers.push_back(literalSampler);
+    }
+
+    void ParseConstantDataDescSetBindingDataKind(const spv_parsed_instruction_t *inst) {
+        ConstantData constantData {
+            .Kind = ConvertToArgKind(inst->words[inst->operands[3].offset]),
+            .DescSet = mConstants[inst->words[inst->operands[4].offset]],
+            .Binding = mConstants[inst->words[inst->operands[5].offset]],
+            .Data = mStrings[inst->words[inst->operands[6].offset]]
+        };
+
+        mReflection.ConstantData.push_back(constantData);
+    }
+
+    void ParseSpecConstantWorkgroupSize(const spv_parsed_instruction_t *inst) {
+        Size workgroupSize {
+            .w = mConstants[inst->words[inst->operands[4].offset]],
+            .h = mConstants[inst->words[inst->operands[5].offset]],
+            .d = mConstants[inst->words[inst->operands[6].offset]]
+        };
+
+        mReflection.WorkgroupSize = workgroupSize;
+    }
+
+    void ParseSpecConstantGlobalOffset(const spv_parsed_instruction_t *inst) {
+        Origin globalOffset {
+            .x = mConstants[inst->words[inst->operands[4].offset]],
+            .y = mConstants[inst->words[inst->operands[5].offset]],
+            .z = mConstants[inst->words[inst->operands[5].offset]]
+        };
+
+        mReflection.GlobalOffset = globalOffset;
+    }
+
+    void ParseSpecConstantWorkDim(const spv_parsed_instruction_t *inst) {
+        mReflection.WorkDim = mConstants[inst->words[inst->operands[4].offset]];
+    }
+
+    void ParsePushConstantOffsetSizeKind(const spv_parsed_instruction_t * inst) {
+        PushConstant pushConstant {
+            .Kind = ConvertToPushConstant(inst->operands[3].offset),
+            .Offset = mConstants[inst->words[inst->operands[4].offset]],
+            .Size = mConstants[inst->words[inst->operands[5].offset]]
+        };
+
+        mReflection.PushConstants.push_back(pushConstant);
     }
 
     void ParseExtInst(const spv_parsed_instruction_t *inst) {
@@ -195,17 +283,41 @@ private:
                 case ExtInst::ArgumentSampledImage:
                 case ExtInst::ArgumentStorageImage:
                 case ExtInst::ArgumentSampler:
-                    ParseArgKindKernelOrdinalBinding(inst);
+                    ParseArgumentKindKernelOrdinalBinding(inst);
                     break;
                 case ExtInst::ArgumentPodStorageBuffer:
                 case ExtInst::ArgumentPodUniform:
-                    ParseArgKindKernelOrdinalBindingOffsetSize(inst);
+                    ParseArgumentKindKernelOrdinalBindingOffsetSize(inst);
                     break;
                 case ExtInst::ArgumentPodPushConstant:
-                    ParseArgKindKernelOrdinalOffsetSize(inst);
+                    ParseArgumentKindKernelOrdinalOffsetSize(inst);
                     break;
                 case ExtInst::ArgumentWorkgroup:
-                    ParseArgKindKernelOrdinalSizeSpec(inst);
+                    ParseArgumentKindKernelOrdinalSizeSpec(inst);
+                    break;
+                case ExtInst::ConstantDataStorageBuffer:
+                case ExtInst::ConstantDataUniform:
+                    ParseConstantDataDescSetBindingDataKind(inst);
+                    break;
+                case ExtInst::SpecConstantWorkgroupSize:
+                    ParseSpecConstantWorkgroupSize(inst);
+                    break;
+                case ExtInst::SpecConstantGlobalOffset:
+                    ParseSpecConstantGlobalOffset(inst);
+                    break;
+                case ExtInst::SpecConstantWorkDim:
+                    ParseSpecConstantWorkDim(inst);
+                    break;
+                case ExtInst::PushConstantGlobalOffset:
+                case ExtInst::PushConstantEnqueuedLocalSize:
+                case ExtInst::PushConstantGlobalSize:
+                case ExtInst::PushConstantRegionOffset:
+                case ExtInst::PushConstantNumWorkgroups:
+                case ExtInst::PushConstantRegionGroupOffset:
+                    ParsePushConstantOffsetSizeKind(inst);
+                    break;
+                case ExtInst::LiteralSampler:
+                    ParseLiteralDescSetBindingMask(inst);
                     break;
                 default:
                     break;
@@ -235,7 +347,7 @@ private:
     }
 };
 
-std::unordered_map<std::string, std::vector<Binding>> Reflector::Reflect(const std::vector<uint32_t> &binary) {
+Reflection Reflector::Reflect(const std::vector<uint32_t> &binary) {
     return Parser(SPV_ENV_OPENCL_1_2).Parse(binary);
 }
 

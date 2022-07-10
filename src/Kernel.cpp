@@ -27,6 +27,59 @@
 
 namespace cml {
 
+spirv_cross::MSLSamplerCoord ConvertToSamplerCoord(clspv::SamplerNormalizedCoords normalizedCoords) {
+    switch (normalizedCoords) {
+        case clspv::CLK_NORMALIZED_COORDS_FALSE:
+            return spirv_cross::MSL_SAMPLER_COORD_PIXEL;
+        case clspv::CLK_NORMALIZED_COORDS_TRUE:
+        case clspv::CLK_NORMALIZED_COORDS_NOT_SET:
+            return spirv_cross::MSL_SAMPLER_COORD_NORMALIZED;
+        default:
+            throw std::exception();
+    }
+}
+
+spirv_cross::MSLSamplerAddress ConvertToSamplerAddress(clspv::SamplerAddressingMode addressingMode) {
+    switch (addressingMode) {
+        case clspv::CLK_ADDRESS_NONE:
+        case clspv::CLK_ADDRESS_CLAMP_TO_EDGE:
+            return spirv_cross::MSL_SAMPLER_ADDRESS_CLAMP_TO_EDGE;
+        case clspv::CLK_ADDRESS_CLAMP:
+            return spirv_cross::MSL_SAMPLER_ADDRESS_CLAMP_TO_BORDER;
+        case clspv::CLK_ADDRESS_MIRRORED_REPEAT:
+            return spirv_cross::MSL_SAMPLER_ADDRESS_MIRRORED_REPEAT;
+        case clspv::CLK_ADDRESS_REPEAT:
+            return spirv_cross::MSL_SAMPLER_ADDRESS_REPEAT;
+        default:
+            throw std::exception();
+    }
+}
+
+spirv_cross::MSLSamplerFilter ConvertToSamplerFilter(clspv::SamplerFilterMode filterMode) {
+    switch (filterMode) {
+        case clspv::CLK_FILTER_NEAREST:
+            return spirv_cross::MSL_SAMPLER_FILTER_NEAREST;
+        case clspv::CLK_FILTER_LINEAR:
+        case clspv::CLK_FILTER_NOT_SET:
+            return spirv_cross::MSL_SAMPLER_FILTER_LINEAR;
+        default:
+            throw std::exception();
+    }
+}
+
+spirv_cross::MSLConstexprSampler ConvertToConstexprSampler(const LiteralSampler &literalSampler) {
+    spirv_cross::MSLConstexprSampler constexprSampler;
+
+    constexprSampler.coord = ConvertToSamplerCoord(literalSampler.NormalizedCoords);
+    constexprSampler.s_address = ConvertToSamplerAddress(literalSampler.AddressingMode);
+    constexprSampler.r_address = ConvertToSamplerAddress(literalSampler.AddressingMode);
+    constexprSampler.t_address = ConvertToSamplerAddress(literalSampler.AddressingMode);
+    constexprSampler.min_filter = ConvertToSamplerFilter(literalSampler.FilterMode);
+    constexprSampler.mag_filter = ConvertToSamplerFilter(literalSampler.FilterMode);
+
+    return constexprSampler;
+}
+
 void KeepResourceBindings(spirv_cross::CompilerMSL &compiler) {
     const auto resources = compiler.get_shader_resources();
     const auto stage = compiler.get_execution_model();
@@ -80,6 +133,13 @@ void KeepResourceBindings(spirv_cross::CompilerMSL &compiler) {
     }
 }
 
+void RemapConstexprSamplers(spirv_cross::CompilerMSL &compiler, const std::vector<LiteralSampler> &literalSamplers) {
+    for (auto &literalSampler : literalSamplers) {
+        compiler.remap_constexpr_sampler_by_binding(literalSampler.DescSet, literalSampler.Binding,
+                                                    ConvertToConstexprSampler(literalSampler));
+    }
+}
+
 std::string ConvertToString(const std::unordered_map<uint32_t, std::string> &defines) {
     std::stringstream stream;
 
@@ -126,9 +186,8 @@ Kernel *Kernel::DownCast(cl_kernel kernel) {
 }
 
 Kernel::Kernel(Program *program, const std::string &name)
-    : _cl_kernel{Dispatch::GetTable()}, Object{}, mProgram{program}, mName{name}
-    , mBindings{program->GetReflection().at(name)}, mPipelineStates{}, mArgTable{} {
-    InitBindings();
+    : _cl_kernel{Dispatch::GetTable()}, Object{}, mProgram{program}, mReflection{program->GetReflection()}, mName{name}
+    , mPipelineStates{}, mArgTable{} {
     InitSource();
     InitPipelineState();
     InitArgTable();
@@ -143,7 +202,7 @@ Kernel::~Kernel() {
 }
 
 void Kernel::SetArg(size_t index, const void *data, size_t size) {
-    if (mBindings[index].Kind != clspv::ArgKind::Local) {
+    if (mArgTable[index].Kind != clspv::ArgKind::Local) {
         if (data) {
             memcpy(mArgTable[index].Data, data, size);
         }
@@ -152,8 +211,8 @@ void Kernel::SetArg(size_t index, const void *data, size_t size) {
     } else {
         std::stringstream stream;
 
-        stream << "#define SPIRV_CROSS_CONSTANT_ID_" << mBindings[index].Spec << " "
-               << size / mBindings[index].Size << "\n";
+        stream << "#define SPIRV_CROSS_CONSTANT_ID_" << mReflection.Arguments[mName][index].Spec << " "
+               << size / mReflection.Arguments[mName][index].Size << "\n";
         mDefines[index] = stream.str();
     }
 }
@@ -193,10 +252,6 @@ std::unordered_map<uint32_t, Arg> Kernel::GetArgTable() const {
     return mArgTable;
 }
 
-void Kernel::InitBindings() {
-    std::sort(mBindings.begin(), mBindings.end(), [](auto &lhs, auto &rhs) { return lhs.Ordinal < rhs.Ordinal; });
-}
-
 void Kernel::InitSource() {
     spirv_cross::CompilerMSL::Options options;
 
@@ -207,6 +262,7 @@ void Kernel::InitSource() {
     compiler.set_msl_options(options);
     compiler.set_entry_point(mName, spv::ExecutionModelGLCompute);
     KeepResourceBindings(compiler);
+    RemapConstexprSamplers(compiler, mReflection.LiteralSamplers);
 
     mSource = compiler.compile();
     assert(!mSource.empty());
@@ -223,8 +279,8 @@ void Kernel::InitPipelineState() {
 }
 
 void Kernel::InitArgTable() {
-    for (auto &binding : mBindings) {
-        mArgTable[binding.Ordinal] = {.Kind = binding.Kind, .Binding = binding.Index};
+    for (auto &argument : mReflection.Arguments[mName]) {
+        mArgTable[argument.Ordinal] = {.Kind = argument.Kind, .Binding = argument.Binding};
     }
 }
 

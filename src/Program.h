@@ -58,7 +58,7 @@ public:
     cl_build_status GetBuildStatus() const;
     std::string GetLog() const;
     std::vector<uint32_t> GetBinary() const;
-    std::unordered_map<std::string, std::vector<Binding>> GetReflection() const;
+    Reflection GetReflection() const;
 
 private:
     Context *mContext;
@@ -67,7 +67,7 @@ private:
     std::vector<uint32_t> mBinary;
     cl_build_status mBuildStatus;
     std::string mLog;
-    std::unordered_map<std::string, std::vector<Binding>> mReflection;
+    Reflection mReflection;
 };
 
 } //namespace cml

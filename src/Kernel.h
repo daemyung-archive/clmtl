@@ -74,14 +74,13 @@ public:
 
 private:
     Program *mProgram;
+    Reflection mReflection;
     std::string mName;
-    std::vector<Binding> mBindings;
     std::string mSource;
     std::unordered_map<uint64_t, std::unordered_map<std::string, MTL::ComputePipelineState *>> mPipelineStates;
     std::unordered_map<uint32_t, std::string> mDefines;
     std::unordered_map<uint32_t, Arg> mArgTable;
 
-    void InitBindings();
     void InitSource();
     void InitPipelineState();
     void InitArgTable();

@@ -20,22 +20,58 @@
 #include <vector>
 #include <unordered_map>
 #include <clspv/ArgKind.h>
+#include <clspv/PushConstant.h>
+#include <clspv/Sampler.h>
+
+#include "Size.h"
+#include "Origin.h"
 
 namespace cml {
 
-struct Binding {
+struct Argument {
     std::string Kernel;
     uint32_t Ordinal;
     clspv::ArgKind Kind;
-    uint32_t Index;
+    uint32_t Binding;
     uint32_t Size;
     uint32_t Offset;
     uint32_t Spec;
 };
 
+struct ConstantData {
+    clspv::ArgKind Kind;
+    uint32_t DescSet;
+    uint32_t Binding;
+    std::string Data;
+};
+
+struct PushConstant {
+    clspv::PushConstant Kind;
+    uint32_t Offset;
+    uint32_t Size;
+};
+
+struct LiteralSampler {
+    uint32_t DescSet;
+    uint32_t Binding;
+    clspv::SamplerNormalizedCoords NormalizedCoords;
+    clspv::SamplerAddressingMode AddressingMode;
+    clspv::SamplerFilterMode FilterMode;
+};
+
+struct Reflection {
+    std::unordered_map<std::string, std::vector<Argument>> Arguments;
+    std::vector<ConstantData> ConstantData;
+    Size WorkgroupSize;
+    Origin GlobalOffset;
+    uint32_t WorkDim;
+    std::vector<PushConstant> PushConstants;
+    std::vector<LiteralSampler> LiteralSamplers;
+};
+
 class Reflector {
 public:
-    static std::unordered_map<std::string, std::vector<Binding>> Reflect(const std::vector<uint32_t> &binary);
+    static Reflection Reflect(const std::vector<uint32_t> &binary);
 };
 
 } //namespace cml

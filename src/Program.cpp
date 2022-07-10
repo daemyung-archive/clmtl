@@ -92,7 +92,7 @@ std::vector<uint32_t> Program::GetBinary() const {
     return mBinary;
 }
 
-std::unordered_map<std::string, std::vector<Binding>> Program::GetReflection() const {
+Reflection Program::GetReflection() const {
     return mReflection;
 }
 

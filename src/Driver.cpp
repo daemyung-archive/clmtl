@@ -1567,17 +1567,17 @@ cl_int clCreateKernelsInProgram(cl_program program, cl_uint num_kernels, cl_kern
     auto reflection = cmlProgram->GetReflection();
 
     if (kernels) {
-        if (num_kernels < reflection.size()) {
+        if (num_kernels < reflection.Arguments.size()) {
             return CL_INVALID_VALUE;
         }
 
-        std::transform(reflection.begin(), reflection.end(), kernels, [cmlProgram](auto iter) {
+        std::transform(reflection.Arguments.begin(), reflection.Arguments.end(), kernels, [cmlProgram](auto iter) {
             return new cml::Kernel(cmlProgram, iter.first);
         });
     }
 
     if (num_kernels_ret) {
-        num_kernels_ret[0] = reflection.size();
+        num_kernels_ret[0] = reflection.Arguments.size();
     }
 
     return CL_SUCCESS;
