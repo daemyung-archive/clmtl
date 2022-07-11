@@ -62,9 +62,9 @@ CommandQueue *CommandQueue::DownCast(cl_command_queue commandQueue) {
     return (CommandQueue *) commandQueue;
 }
 
-CommandQueue::CommandQueue(Context *context, Device *device)
-    : _cl_command_queue{Dispatch::GetTable()}, Object{}, mContext{context}, mDevice{device}, mCommandQueue{}
-    , mCommandBuffer{}, mCommittedCommandBuffer{} {
+CommandQueue::CommandQueue(Context *context, Device *device, cl_command_queue_properties properties)
+    : _cl_command_queue{Dispatch::GetTable()}, Object{}, mContext{context}, mDevice{device}, mProperties{properties}
+    , mCommandQueue{}, mCommandBuffer{}, mCommittedCommandBuffer{} {
     InitCommandQueue();
     InitCommandBuffer();
 }
@@ -286,6 +286,10 @@ Context *CommandQueue::GetContext() const {
 
 Device *CommandQueue::GetDevice() const {
     return mDevice;
+}
+
+cl_command_queue_properties CommandQueue::GetProperties() const {
+    return mProperties;
 }
 
 void CommandQueue::InitCommandQueue() {

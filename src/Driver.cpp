@@ -676,7 +676,7 @@ cl_int clGetCommandQueueInfo(cl_command_queue command_queue, cl_command_queue_in
             break;
         case CL_QUEUE_PROPERTIES:
             size = sizeof(cl_properties);
-            *((cl_properties *) info) = 0;
+            *((cl_properties *) info) = cmlCommandQueue->GetProperties();
             break;
         default:
             return CL_INVALID_VALUE;
@@ -2868,19 +2868,11 @@ cl_command_queue clCreateCommandQueue(cl_context context, cl_device_id device, c
         return nullptr;
     }
 
-    if (properties) {
-        if (errcode_ret) {
-            errcode_ret[0] = CL_INVALID_QUEUE_PROPERTIES;
-        }
-
-        return nullptr;
-    }
-
     if (errcode_ret) {
         errcode_ret[0] = CL_SUCCESS;
     }
 
-    return new cml::CommandQueue(cmlContext, cmlDevice);
+    return new cml::CommandQueue(cmlContext, cmlDevice, properties);
 }
 
 cl_sampler clCreateSampler(cl_context context, cl_bool normalized_coords, cl_addressing_mode addressing_mode,

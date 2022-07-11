@@ -52,7 +52,7 @@ public:
     static CommandQueue *DownCast(cl_command_queue commandQueue);
 
 public:
-    CommandQueue(Context *context, Device *device);
+    CommandQueue(Context *context, Device *device, cl_command_queue_properties properties);
     ~CommandQueue() override;
     void EnqueueReadBuffer(Buffer *srcBuffer, size_t srcOffset, void *dstData, size_t dstSize);
     void EnqueueWriteBuffer(const void *srcData, Buffer *dstBuffer, size_t offset, size_t size);
@@ -76,10 +76,12 @@ public:
     void WaitIdle();
     Context *GetContext() const;
     Device *GetDevice() const;
+    cl_command_queue_properties GetProperties() const;
 
 private:
     Context *mContext;
     Device *mDevice;
+    cl_command_queue_properties mProperties;
     MTL::CommandQueue *mCommandQueue;
     MTL::CommandBuffer *mCommandBuffer;
     std::vector<MTL::CommandBuffer *> mCommittedCommandBuffer;
