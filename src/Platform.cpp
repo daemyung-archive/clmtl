@@ -34,7 +34,7 @@ std::string Platform::GetProfile() {
 }
 
 std::string Platform::GetVersion() {
-    return "OpenCL 1.0";
+    return "OpenCL 1.2 ";
 }
 
 std::string Platform::GetName() {
