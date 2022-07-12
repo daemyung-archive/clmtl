@@ -293,7 +293,7 @@ cl_int clGetDeviceInfo(cl_device_id device, cl_device_info param_name, size_t pa
             break;
         case CL_DEVICE_LOCAL_MEM_TYPE:
             info = &limits.LocalMemType;
-            size = sizeof(cl_ulong);
+            size = sizeof(cl_device_local_mem_type);
             break;
         case CL_DEVICE_LOCAL_MEM_SIZE:
             info = &limits.LocalMemSize;

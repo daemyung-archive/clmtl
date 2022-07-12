@@ -74,7 +74,7 @@ struct DeviceLimits {
     cl_ulong GlobalMemSize;
     cl_ulong MaxConstantBufferSize;
     cl_uint MaxConstantArgs;
-    cl_ulong LocalMemType;
+    cl_device_local_mem_type LocalMemType;
     cl_ulong LocalMemSize;
     cl_bool ErrorCorrectionSupport;
     size_t ProfilingTimeResolution;
