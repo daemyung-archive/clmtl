@@ -1447,11 +1447,15 @@ cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t p
             break;
         case CL_PROGRAM_BINARY_SIZES:
             size = sizeof(size_t);
-            *((size_t *) info) = cmlProgram->GetBinary().size();
+            ((size_t *) info)[0] = sizeof(uint32_t) * cmlProgram->GetBinary().size();
             break;
         case CL_PROGRAM_BINARIES:
-            size = sizeof(uint32_t) * cmlProgram->GetBinary().size();
-            memcpy(info, cmlProgram->GetBinary().data(), size);
+            size = sizeof(unsigned char **);
+            if (param_value && param_value_size == size) {
+                memcpy(((unsigned char **)param_value)[0], cmlProgram->GetBinary().data(),
+                       sizeof(uint32_t) * cmlProgram->GetBinary().size());
+                memcpy(info, param_value, size);
+            }
             break;
         default:
             return CL_INVALID_VALUE;

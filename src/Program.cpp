@@ -88,8 +88,8 @@ std::string Program::GetLog() const {
     return mLog;
 }
 
-std::vector<uint32_t> Program::GetBinary() const {
-    return mBinary;
+std::span<const uint32_t> Program::GetBinary() const {
+    return {mBinary.data(), mBinary.size()};
 }
 
 Reflection Program::GetReflection() const {

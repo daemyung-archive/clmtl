@@ -257,7 +257,7 @@ void Kernel::InitSource() {
 
     options.set_msl_version(2, 3);
 
-    spirv_cross::CompilerMSL compiler(mProgram->GetBinary());
+    spirv_cross::CompilerMSL compiler(mProgram->GetBinary().data(), mProgram->GetBinary().size());
 
     compiler.set_msl_options(options);
     compiler.set_entry_point(mName, spv::ExecutionModelGLCompute);

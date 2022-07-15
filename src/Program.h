@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <string>
+#include <span>
 #include <CL/cl_icd.h>
 
 #include "Object.h"
@@ -57,7 +58,7 @@ public:
     std::string GetOptions() const;
     cl_build_status GetBuildStatus() const;
     std::string GetLog() const;
-    std::vector<uint32_t> GetBinary() const;
+    std::span<const uint32_t> GetBinary() const;
     Reflection GetReflection() const;
 
 private:
