@@ -39,7 +39,7 @@ void Program::AddSource(const std::string &source) {
 }
 
 void Program::Compile() {
-    if (!clspv::CompileFromSourceString(mSource, "", mOptions, &mBinary, &mLog)) {
+    if (!mBinary.empty() || !clspv::CompileFromSourceString(mSource, "", mOptions, &mBinary, &mLog)) {
         mBuildStatus = CL_BUILD_SUCCESS;
     } else {
         mBuildStatus = CL_BUILD_ERROR;
