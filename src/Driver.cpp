@@ -1273,7 +1273,8 @@ cl_program clCreateProgramWithBinary(cl_context context, cl_uint num_devices, co
     auto cmlProgram = new cml::Program(cmlContext);
     assert(cmlProgram);
 
-    std::vector<uint32_t> binary(binaries[0], binaries[0] + lengths[0]);
+    std::vector<uint32_t> binary(reinterpret_cast<const uint32_t *>(binaries[0]),
+                                 reinterpret_cast<const uint32_t *>(binaries[0] + lengths[0]));
 
     if (binary.size() * sizeof(uint32_t) != lengths[0]) {
         if (binary_status) {
