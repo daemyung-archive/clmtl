@@ -1,0 +1,10 @@
+[requires]
+opencl-headers/2022.01.04
+zlib/1.2.12
+ncurses/6.3
+clspv/0.1
+spirv-tools/v2020.5
+spirv-cross/cci.20211113
+
+[generators]
+cmake

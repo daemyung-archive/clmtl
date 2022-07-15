@@ -17,7 +17,6 @@
 #include "LibraryPool.h"
 
 #include <sstream>
-#include <Foundation/Foundation.hpp>
 
 #include "Device.h"
 #include "Program.h"

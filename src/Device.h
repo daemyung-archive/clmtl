@@ -20,7 +20,8 @@
 #include <string>
 #include <vector>
 #include <CL/cl_icd.h>
-#include <Metal/Metal.hpp>
+
+#include "Metal.hpp"
 
 #ifdef __cplusplus
 extern "C" {

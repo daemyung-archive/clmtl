@@ -15,7 +15,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    
+
+    - name: Install Conan
+      run: brew install conan
+
+    - name: Clone Clspv
+      run: git clone https://github.com/daemyung/clspv.git
+
+    - name: Build Clspv
+      run: conan create clspv
+
+    - name: Install packages
+      run: conan install ${{github.workspace}} -if ${{github.workspace}}/build --build=missing
+
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 

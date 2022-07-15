@@ -18,7 +18,6 @@
 
 #include <cassert>
 #include <sstream>
-#include <Foundation/NSString.hpp>
 
 #include "Dispatch.h"
 #include "Device.h"

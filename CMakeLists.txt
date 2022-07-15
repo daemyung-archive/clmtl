@@ -17,9 +17,12 @@
 cmake_minimum_required(VERSION 3.18)
 project(clmtl C CXX)
 
-add_subdirectory(deps)
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()
 
 add_library(clmtl
+        src/Metal.hpp
+        src/Metal.cpp
         src/Driver.cpp
         src/Origin.h
         src/Size.h
@@ -80,10 +83,10 @@ target_compile_options(clmtl
 
 target_link_libraries(clmtl
     PUBLIC
-        khronos
-        apple
-        clspv
-        json
+        "-framework Foundation"
+        "-framework QuartzCore"
+        "-framework Metal"
+        ${CONAN_LIBS}
 )
 
 add_subdirectory(demo)

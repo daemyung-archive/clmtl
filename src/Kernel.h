@@ -20,8 +20,8 @@
 #include <string>
 #include <array>
 #include <CL/cl_icd.h>
-#include <Metal/Metal.hpp>
 
+#include "Metal.hpp"
 #include "Size.h"
 #include "Object.h"
 #include "Reflector.h"

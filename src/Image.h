@@ -17,8 +17,7 @@
 #ifndef CLMTL_IMAGE_H
 #define CLMTL_IMAGE_H
 
-#include <Metal/Metal.hpp>
-
+#include "Metal.hpp"
 #include "Memory.h"
 
 namespace cml {

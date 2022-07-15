@@ -18,8 +18,8 @@
 #define CLMTL_SAMPLER_H
 
 #include <CL/cl_icd.h>
-#include <Metal/Metal.hpp>
 
+#include "Metal.hpp"
 #include "Object.h"
 
 #ifdef __cplusplus

@@ -20,8 +20,8 @@
 #include <cstdint>
 #include <array>
 #include <CL/cl.h>
-#include <Metal/Metal.hpp>
 
+#include "Metal.hpp"
 #include "Size.h"
 
 namespace cml {

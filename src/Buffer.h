@@ -17,8 +17,7 @@
 #ifndef CLMTL_BUFFER_H
 #define CLMTL_BUFFER_H
 
-#include <Metal/Metal.hpp>
-
+#include "Metal.hpp"
 #include "Memory.h"
 
 namespace cml {

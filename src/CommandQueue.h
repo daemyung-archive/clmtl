@@ -20,8 +20,8 @@
 #include <array>
 #include <vector>
 #include <CL/cl_icd.h>
-#include <Metal/Metal.hpp>
 
+#include "Metal.hpp"
 #include "Origin.h"
 #include "Size.h"
 #include "Object.h"

@@ -20,8 +20,8 @@
 #include <functional>
 #include <unordered_map>
 #include <CL/cl_icd.h>
-#include <Metal/Metal.hpp>
 
+#include "Metal.hpp"
 #include "Object.h"
 
 struct _cl_event {

@@ -20,7 +20,8 @@
 #include <unordered_map>
 #include <vector>
 #include <spirv_cross/spirv_msl.hpp>
-#include <Metal/Metal.hpp>
+
+#include "Metal.hpp"
 
 namespace cml {
 
