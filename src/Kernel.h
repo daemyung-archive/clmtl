@@ -69,6 +69,7 @@ public:
     std::string GetName() const;
     MTL::ComputePipelineState *GetPipelineState(const Size &workGroupSize);
     size_t GetWorkGroupSize() const;
+    Size GetCompileWorkGroupSize() const;
     size_t GetWorkItemExecutionWidth() const;
     std::unordered_map<uint32_t, Arg> GetArgTable() const;
 

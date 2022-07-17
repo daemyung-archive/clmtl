@@ -243,6 +243,14 @@ size_t Kernel::GetWorkGroupSize() const {
     return mPipelineStates.at(0).at("")->maxTotalThreadsPerThreadgroup();
 }
 
+Size Kernel::GetCompileWorkGroupSize() const {
+    if (mReflection.RequiredWorkgroupSizes.contains(mName)) {
+        return mReflection.RequiredWorkgroupSizes.at(mName).WorkgroupSize;
+    } else {
+        return {0, 0, 0};
+    }
+}
+
 size_t Kernel::GetWorkItemExecutionWidth() const {
     return mPipelineStates.at(0).at("")->threadExecutionWidth();
 }

@@ -59,6 +59,11 @@ struct LiteralSampler {
     clspv::SamplerFilterMode FilterMode;
 };
 
+struct RequiredWorkgroupSize {
+    std::string Kernel;
+    Size WorkgroupSize;
+};
+
 struct Reflection {
     std::unordered_map<std::string, std::vector<Argument>> Arguments;
     std::vector<ConstantData> ConstantData;
@@ -67,6 +72,7 @@ struct Reflection {
     uint32_t WorkDim;
     std::vector<PushConstant> PushConstants;
     std::vector<LiteralSampler> LiteralSamplers;
+    std::unordered_map<std::string, RequiredWorkgroupSize> RequiredWorkgroupSizes;
 };
 
 class Reflector {

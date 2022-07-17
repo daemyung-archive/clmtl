@@ -1734,8 +1734,8 @@ cl_int clGetKernelWorkGroupInfo(cl_kernel kernel, cl_device_id device, cl_kernel
             *((size_t *) info) = cmlKernel->GetWorkGroupSize();
             break;
         case CL_KERNEL_COMPILE_WORK_GROUP_SIZE:
-            size = sizeof(size_t) * 3;
-            memset(info, 0, size);
+            size = sizeof(cml::Size);
+            ((cml::Size *) info)[0] = cmlKernel->GetCompileWorkGroupSize();
             break;
         case CL_KERNEL_LOCAL_MEM_SIZE:
             size = sizeof(cl_ulong);

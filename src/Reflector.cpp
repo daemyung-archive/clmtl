@@ -269,6 +269,19 @@ private:
         mReflection.PushConstants.push_back(pushConstant);
     }
 
+    void ParsePropertyRequiredWorkgroupSize(const spv_parsed_instruction_t * inst) {
+        RequiredWorkgroupSize requiredWorkGroupSize {
+            .Kernel = mStrings[inst->words[inst->operands[4].offset]],
+            .WorkgroupSize {
+                .w = mConstants[inst->words[inst->operands[5].offset]],
+                .h = mConstants[inst->words[inst->operands[6].offset]],
+                .d = mConstants[inst->words[inst->operands[7].offset]]
+            }
+        };
+
+        mReflection.RequiredWorkgroupSizes[requiredWorkGroupSize.Kernel] = requiredWorkGroupSize;
+    }
+
     void ParseExtInst(const spv_parsed_instruction_t *inst) {
         if (IsNonSemanticClspvReflection(inst)) {
             switch (static_cast<ExtInst>(inst->words[inst->operands[3].offset])) {
@@ -318,6 +331,9 @@ private:
                     break;
                 case ExtInst::LiteralSampler:
                     ParseLiteralDescSetBindingMask(inst);
+                    break;
+                case ExtInst::PropertyRequiredWorkgroupSize:
+                    ParsePropertyRequiredWorkgroupSize(inst);
                     break;
                 default:
                     break;
