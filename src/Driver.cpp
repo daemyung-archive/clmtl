@@ -2603,6 +2603,11 @@ cl_int clEnqueueNDRangeKernel(cl_command_queue command_queue, cl_kernel kernel, 
     }
 
     if (local_work_size) {
+        if (cmlKernel->GetCompileWorkGroupSize() != cml::Size{0, 0, 0} &&
+            cmlKernel->GetCompileWorkGroupSize() != cml::Util::ConvertToSize(work_dim, local_work_size)) {
+            return CL_INVALID_WORK_GROUP_SIZE;
+        }
+
         cmlCommandQueue->EnqueueDispatch(cmlKernel, cml::Util::ConvertToSize(work_dim, global_work_size),
                                          cml::Util::ConvertToSize(work_dim, local_work_size));
     } else {

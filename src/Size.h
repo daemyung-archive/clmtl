@@ -27,6 +27,14 @@ struct Size {
     size_t d;
 };
 
+inline bool operator==(const Size &lhs, const Size &rhs) {
+    return lhs.w == rhs.w && lhs.h == rhs.h && lhs.d == rhs.d;
+}
+
+inline bool operator!=(const Size &lhs, const Size &rhs) {
+    return lhs.w != rhs.w || lhs.h != rhs.h || lhs.d != rhs.d;
+}
+
 } //namespace cml
 
 #endif //CLMTL_SIZE_H
