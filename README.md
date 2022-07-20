@@ -26,12 +26,30 @@
 * Not support `char8`, `char16`, `uchar8`, `uchar16`, `short8`, `short16`, `ushort8`, `ushort16`, `int8`, `int16`,
   `uint8`, `uint16`, `long8`, `long16`, `ulong8`, `ulong16`, `float8` and `float16`.
 
+## Dependencies
+
+All dependencies are managed by [Conan](https://conan.io/) so install it.
+
+```shell
+pip install conan
+```
+
+However [Clspv](https://github.com/google/clspv) can't install using [Conan](https://conan.io/). We have to install it
+manually.
+
+```shell
+git clone https://github.com/daemyung/clspv.git
+cd clspv
+conan create clspv
+```
+
 ## Build
 
-Create a build directory and configure CMake.
+Create a build directory, install dependencies and configure CMake.
 
 ```shell
 mkdir build
+conan install . -if build --build=missing
 cmake -S . -B build
 ```
 
