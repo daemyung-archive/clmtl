@@ -14,6 +14,7 @@
 * limitations under the License.
 ***********************************************************************************************************************/
 
+#include <sstream>
 #include <CL/cl_icd.h>
 
 #include "Util.h"
@@ -1462,6 +1463,17 @@ cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t p
             size = sizeof(size_t);
             ((size_t *) info)[0] = cmlProgram->GetReflection().Arguments.size();
             break;
+        case CL_PROGRAM_KERNEL_NAMES: {
+            std::stringstream stream;
+            for (auto &[name, arguments] : cmlProgram->GetReflection().Arguments) {
+                stream << name << ';';
+            }
+            auto names = stream.str();
+            names.pop_back();
+            size = names.size() + 1;
+            memcpy(info, names.data(), size);
+            break;
+        }
         default:
             return CL_INVALID_VALUE;
     }
