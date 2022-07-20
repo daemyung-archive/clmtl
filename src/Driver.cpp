@@ -1458,6 +1458,10 @@ cl_int clGetProgramInfo(cl_program program, cl_program_info param_name, size_t p
                 memcpy(info, param_value, size);
             }
             break;
+        case CL_PROGRAM_NUM_KERNELS:
+            size = sizeof(size_t);
+            ((size_t *) info)[0] = cmlProgram->GetReflection().Arguments.size();
+            break;
         default:
             return CL_INVALID_VALUE;
     }
